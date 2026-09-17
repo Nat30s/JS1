@@ -96,6 +96,17 @@
         .profile-card:hover .sk-view-btn {
             transform: translateX(0);
         }
+
+        /* Peek-reveal wrapper for the horizontal list card */
+        .sk-view-wrap {
+            position: relative;
+            overflow: hidden;
+            height: 30px;
+            width: 96px;
+        }
+        .sk-view-wrap .sk-view-btn {
+            bottom: 0;
+        }
             width: 4px;
         }
         .filter-sidebar::-webkit-scrollbar-thumb {
@@ -1088,10 +1099,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                             </svg>
                         </button>
-                        <button onclick="viewProfile(${p.id}); event.stopPropagation();" class="sk-view-btn" style="position:static; transform:none;" aria-label="View ${p.name}'s profile">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                            View
-                        </button>
+                        <div class="sk-view-wrap">
+                            <button onclick="viewProfile(${p.id}); event.stopPropagation();" class="sk-view-btn" aria-label="View ${p.name}'s profile">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                View
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
