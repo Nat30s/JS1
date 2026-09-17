@@ -1,5 +1,19 @@
 
 
+
+---
+
+# v2
+- Date - 17 Sep 26
+- AI Used - Claude
+#### Changes List
+- Added shortlists counter at navbar
+- Added back button support, where website goes back to listings not close down
+
+---
+
+
+
 ---
 
 # v1
