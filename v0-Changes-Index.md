@@ -1,6 +1,11 @@
 
 
 
+# v3
+- Date - 21 Sep 26
+- AI Used - Claude
+#### Changes List
+- Mobile Responsive update
 ---
 
 # v2
@@ -9,10 +14,6 @@
 #### Changes List
 - Added shortlists counter at navbar
 - Added back button support, where website goes back to listings not close down
-
----
-
-
 
 ---
 
