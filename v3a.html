@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoulKnot | Premium Matrimony</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfdfd;
+            color: #1a1a1a;
+            scroll-behavior: smooth;
+        }
+
+        .profile-card {
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .profile-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .profile-card:hover img {
+            transform: scale(1.04);
+        }
+
+        /* List layout cards slide right instead of lifting */
+        .flex.items-stretch.profile-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .flex.items-stretch.profile-card:hover img {
+            transform: scale(1.03);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .heart-pop {
+            animation: heart-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes heart-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+
+        /* Peek-reveal View button on grid cards */
+        .sk-footer-bar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 10px 14px 14px 14px;
+            border-top: 0.5px solid #f3f4f6;
+            margin-top: 2px;
+            overflow: hidden;
+            min-height: 44px;
+        }
+
+        .sk-view-btn {
+            position: absolute;
+            right: 0;
+            bottom: 8px;
+            transform: translateX(calc(100% - 30px));
+            background: #111;
+            color: #fff;
+            border: none;
+            border-radius: 99px 0 0 99px;
+            padding: 7px 18px 7px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.02em;
+        }
+
+        .sk-view-btn svg {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+        }
+
+        .profile-card:hover .sk-view-btn {
+            transform: translateX(0);
+        }
+
+        /* Peek-reveal wrapper for the horizontal list card */
+        .sk-view-wrap {
+            position: relative;
+            overflow: hidden;
+            height: 30px;
+            width: 96px;
+        }
+        .sk-view-wrap .sk-view-btn {
+            bottom: 0;
+        }
+            width: 4px;
+        }
+        .filter-sidebar::-webkit-scrollbar-thumb {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .print-only { display: block !important; }
+            .print-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 40px; }
+            .profile-detail-view { display: block !important; }
+        }
+
+        .print-only { display: none; }
+
+        .nav-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 16px; height: 16px; padding: 0 5px;
+            background: #f43f5e; color: #fff; border-radius: 99px;
+            font-size: 9px; font-weight: 800; margin-left: 6px;
+            transition: all 0.2s ease;
+        }
+        .nav-badge.hidden { display: none; }
+
+        /* ── Custom select chevron (removes native browser arrow inconsistency) ── */
+        .sk-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 14px;
+            padding-right: 28px !important;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+        .sk-select:focus {
+            outline: none;
+            border-color: #000 !important;
+            background-color: #fff;
+        }
+        .sk-select option {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+        }
+
+        /* ── Mobile nav menu (force-hidden at desktop widths regardless of toggle state) ── */
+        @media (min-width: 1024px) {
+            #mobileMenu { display: none !important; }
+        }
+
+        /* ── Mobile filter bottom-sheet (force-visible at desktop widths regardless of toggle state) ── */
+        @media (min-width: 1024px) {
+            #filterSheet { display: block !important; }
+            #filterBackdrop { display: none !important; }
+        }
+
+        /* ── Detail view: stacked on mobile, two-column from lg up ── */
+        .sk-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        .sk-detail-sticky { position: static; }
+        @media (min-width: 1024px) {
+            .sk-detail-grid { grid-template-columns: 340px 1fr; gap: 28px; align-items: start; }
+            .sk-detail-sticky { position: sticky; top: 100px; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Navigation -->
+    <header class="max-w-7xl mx-auto px-5 sm:px-8 py-5 sm:py-6 flex justify-between items-center sticky top-0 z-50 glass-nav border-b border-gray-100/50 no-print">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="showDiscovery()">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-black rounded-2xl flex items-center justify-center text-white rotate-3">
+                <span class="font-bold text-base sm:text-lg -rotate-3">S</span>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg sm:text-xl tracking-tight leading-none">SoulKnot</h1>
+                <p class="text-[9px] sm:text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-1">Curated Matches</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-3 sm:gap-8">
+            <nav class="hidden lg:flex gap-10 text-xs font-bold uppercase tracking-widest text-gray-400">
+                <a href="javascript:void(0)" onclick="showDiscovery()" data-view="discovery" class="nav-link hover:text-black">Discover</a>
+                <a href="javascript:void(0)" onclick="showShortlisted()" data-view="shortlisted" class="nav-link hover:text-black flex items-center">Shortlisted<span id="navBadge" class="nav-badge hidden">0</span></a>
+                <a href="#" class="nav-link hover:text-black">Messages</a>
+            </nav>
+            <div class="h-8 w-[1px] bg-gray-100 hidden lg:block"></div>
+            <button class="bg-black text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-2xl text-[10px] sm:text-xs font-bold hover:bg-zinc-800 transition-all flex items-center gap-2">
+                Create Profile
+            </button>
+            <button onclick="toggleMobileMenu()" id="mobileMenuBtn" aria-label="Menu" class="lg:hidden w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-xl hover:bg-gray-50">
+                <svg id="menuIconOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg id="menuIconClose" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile menu panel -->
+    <div id="mobileMenu" class="hidden lg:hidden fixed inset-x-0 top-[65px] sm:top-[73px] z-40 bg-white border-b border-gray-100 px-5 py-4 space-y-1 no-print shadow-lg">
+        <a href="javascript:void(0)" onclick="showDiscovery(); closeMobileMenu();" class="block py-3 text-sm font-bold uppercase tracking-widest text-gray-600 border-b border-gray-50">Discover</a>
+        <a href="javascript:void(0)" onclick="showShortlisted(); closeMobileMenu();" class="flex items-center justify-between py-3 text-sm font-bold uppercase tracking-widest text-gray-600 border-b border-gray-50">Shortlisted<span id="navBadgeMobile" class="nav-badge hidden">0</span></a>
+        <a href="#" class="block py-3 text-sm font-bold uppercase tracking-widest text-gray-600">Messages</a>
+    </div>
+
+    <div id="pageContent"></div>
+
+    <footer class="mt-32 py-20 border-t border-gray-100 text-center no-print">
+        <div class="mb-8 font-bold text-xl">SoulKnot</div>
+        <div class="flex justify-center gap-8 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <a href="#" class="hover:text-black">Privacy Policy</a>
+            <a href="#" class="hover:text-black">Terms of Service</a>
+            <a href="#" class="hover:text-black">Safety Tips</a>
+        </div>
+        <p class="mt-8 text-gray-300 text-xs italic">Designed for those who seek more than just a profile.</p>
+    </footer>
+
+    <script>
+    // ─────────────────────────────────────────────
+    // DATA
+    // ─────────────────────────────────────────────
+    const profiles = [
+        {
+            id: 1, name: "Mehak Preet", age: 25, gender: "Female", city: "Chandigarh", state: "Punjab", country: "India",
+            job: "Product Designer", category: "Arts", edu: "Masters",
+            image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=800",
+            diet: "Veg", height: "5'4\"", bio: "A design enthusiast with a love for traditional Punjabi culture and modern aesthetics. Passionate about creating meaningful experiences through design.",
+            family: "Nuclear family based in Sector 8.", income: "11-15L", status: "Never Married", children: "No", manglik: "No",
+            // Education & Career
+            eduInstitution: "Panjab University", eduDegree: "M.Des in Visual Communication", eduYear: "2022",
+            jobCompany: "Tata Consultancy Services", jobRole: "Senior Product Designer", jobYears: "3 years",
+            hobbies: "Sketching, Kathak dance, travel photography",
+            // Religion & Caste
+            religion: "Sikh", caste: "Khatri", subcaste: "Arora", gotra: "Bharadwaj",
+            // Family
+            grandfatherName: "S. Harpal Singh", grandmotherName: "Smt. Gurpreet Kaur",
+            fatherName: "S. Rajinder Singh", fatherOccupation: "Retired Bank Manager",
+            motherName: "Smt. Simran Preet", motherOccupation: "School Principal",
+            siblings: "1 Brother", siblingsOccupation: "Software Engineer, Infosys",
+            familyType: "Nuclear", familyValues: "Moderate",
+            // Astro
+            dob: "14 March 2000", tob: "06:45 AM", pob: "Chandigarh",
+            rashi: "Meen (Pisces)", nakshatra: "Revati", manglikDetail: "Non-Manglik",
+            // Preferences
+            prefAgeMin: 26, prefAgeMax: 32, prefHeightMin: "5'7\"", prefHeightMax: "6'2\"",
+            prefLocation: "Punjab, Haryana, Delhi NCR", prefEdu: "Masters or above",
+            prefIncome: "15L+", prefCaste: "Open to all Khatri", prefDiet: "Veg preferred"
+        },
+        {
+            id: 2, name: "Aditya Malhotra", age: 30, gender: "Male", city: "Mohali", state: "Punjab", country: "India",
+            job: "Neurosurgeon", category: "Medical", edu: "Doctorate",
+            image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800",
+            diet: "Non-Veg", height: "6'1\"", bio: "Dedicated medical professional with a passion for neuroscience and patient care. Balances a demanding career with a love for classical music and cricket.",
+            family: "Business-oriented family.", income: "26L+", status: "Never Married", children: "No", manglik: "No",
+            eduInstitution: "AIIMS New Delhi", eduDegree: "M.Ch Neurosurgery", eduYear: "2020",
+            jobCompany: "Fortis Hospital Mohali", jobRole: "Consultant Neurosurgeon", jobYears: "4 years",
+            hobbies: "Classical guitar, cricket, reading medical journals",
+            religion: "Hindu", caste: "Brahmin", subcaste: "Saraswat", gotra: "Kashyap",
+            grandfatherName: "Sh. Ramesh Malhotra", grandmotherName: "Smt. Savita Malhotra",
+            fatherName: "Sh. Vikram Malhotra", fatherOccupation: "Business Owner",
+            motherName: "Smt. Anita Malhotra", motherOccupation: "Homemaker",
+            siblings: "1 Sister", siblingsOccupation: "Chartered Accountant",
+            familyType: "Nuclear", familyValues: "Traditional",
+            dob: "8 June 1994", tob: "10:20 AM", pob: "Mohali",
+            rashi: "Mithun (Gemini)", nakshatra: "Ardra", manglikDetail: "Non-Manglik",
+            prefAgeMin: 24, prefAgeMax: 29, prefHeightMin: "5'3\"", prefHeightMax: "5'9\"",
+            prefLocation: "Punjab, Delhi NCR", prefEdu: "Graduates and above",
+            prefIncome: "Any", prefCaste: "Brahmin preferred", prefDiet: "Any"
+        },
+        {
+            id: 3, name: "Sanya Kapoor", age: 27, gender: "Female", city: "Panchkula", state: "Haryana", country: "India",
+            job: "Venture Capitalist", category: "Business", edu: "Masters",
+            image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800",
+            diet: "Veg", height: "5'6\"", bio: "Driven by numbers and a vision for sustainable impact. Invested in 12 startups across fintech and edtech. Believes in building a life with equal partnership.",
+            family: "Industrialist background.", income: "21-25L", status: "Never Married", children: "No", manglik: "Yes",
+            eduInstitution: "IIM Ahmedabad", eduDegree: "MBA Finance", eduYear: "2021",
+            jobCompany: "Sequoia Capital India", jobRole: "Associate VC", jobYears: "3 years",
+            hobbies: "Yoga, startup mentoring, watercolour painting",
+            religion: "Hindu", caste: "Khatri", subcaste: "Kapoor", gotra: "Vashisht",
+            grandfatherName: "Sh. Mohan Lal Kapoor", grandmotherName: "Smt. Kamla Kapoor",
+            fatherName: "Sh. Suresh Kapoor", fatherOccupation: "Industrialist",
+            motherName: "Smt. Renu Kapoor", motherOccupation: "Homemaker",
+            siblings: "1 Brother", siblingsOccupation: "MBA, Managing family business",
+            familyType: "Nuclear", familyValues: "Liberal",
+            dob: "2 November 1997", tob: "02:15 PM", pob: "Panchkula",
+            rashi: "Vrishchik (Scorpio)", nakshatra: "Anuradha", manglikDetail: "Anshik Manglik",
+            prefAgeMin: 28, prefAgeMax: 35, prefHeightMin: "5'9\"", prefHeightMax: "6'3\"",
+            prefLocation: "Open to anywhere", prefEdu: "Masters or above",
+            prefIncome: "20L+", prefCaste: "Open", prefDiet: "Veg preferred"
+        },
+        {
+            id: 4, name: "Kabir Singh", age: 32, gender: "Male", city: "Chandigarh", state: "Chandigarh", country: "India",
+            job: "AI Researcher", category: "Tech", edu: "Doctorate",
+            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800",
+            diet: "Non-Veg", height: "5'11\"", bio: "Tech optimist working at the frontier of AI and human cognition. Looking for a grounded, independent partner who values intellectual growth.",
+            family: "Academic background.", income: "26L+", status: "Divorced", children: "Yes", manglik: "No",
+            eduInstitution: "IIT Delhi", eduDegree: "Ph.D. Computer Science", eduYear: "2018",
+            jobCompany: "Google DeepMind", jobRole: "Senior Research Scientist", jobYears: "6 years",
+            hobbies: "Rock climbing, philosophy, open-source contributions",
+            religion: "Sikh", caste: "Jat", subcaste: "—", gotra: "Gill",
+            grandfatherName: "S. Balwant Singh", grandmotherName: "Smt. Harbhajan Kaur",
+            fatherName: "S. Gurpreet Singh", fatherOccupation: "Professor, PU Chandigarh",
+            motherName: "Smt. Manjeet Kaur", motherOccupation: "Retired IAS Officer",
+            siblings: "None", siblingsOccupation: "—",
+            familyType: "Nuclear", familyValues: "Liberal",
+            dob: "19 January 1992", tob: "11:55 PM", pob: "Chandigarh",
+            rashi: "Makar (Capricorn)", nakshatra: "Shravana", manglikDetail: "Non-Manglik",
+            prefAgeMin: 26, prefAgeMax: 34, prefHeightMin: "5'2\"", prefHeightMax: "5'10\"",
+            prefLocation: "Open", prefEdu: "Any", prefIncome: "Any", prefCaste: "Open", prefDiet: "Any"
+        },
+        {
+            id: 5, name: "Ishaan Khurana", age: 29, gender: "Male", city: "Ludhiana", state: "Punjab", country: "India",
+            job: "Civil Engineer", category: "Construction", edu: "Bachelors",
+            image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800",
+            diet: "Veg", height: "5'10\"", bio: "Down-to-earth person who enjoys outdoor activities and traveling. Building sustainable infrastructure and a meaningful life in equal measure.",
+            family: "Joint family involved in agricultural exports.", income: "16-20L", status: "Never Married", children: "No", manglik: "No",
+            eduInstitution: "NIT Jalandhar", eduDegree: "B.Tech Civil Engineering", eduYear: "2018",
+            jobCompany: "L&T Construction", jobRole: "Project Engineer", jobYears: "5 years",
+            hobbies: "Trekking, football, reading biographies",
+            religion: "Hindu", caste: "Khatri", subcaste: "Khurana", gotra: "Atri",
+            grandfatherName: "Sh. Tarlok Khurana", grandmotherName: "Smt. Prem Khurana",
+            fatherName: "Sh. Deepak Khurana", fatherOccupation: "Agricultural Exports Business",
+            motherName: "Smt. Neelam Khurana", motherOccupation: "Homemaker",
+            siblings: "2 Sisters", siblingsOccupation: "Teacher & Pharmacist",
+            familyType: "Joint", familyValues: "Traditional",
+            dob: "5 July 1995", tob: "08:30 AM", pob: "Ludhiana",
+            rashi: "Kark (Cancer)", nakshatra: "Pushya", manglikDetail: "Non-Manglik",
+            prefAgeMin: 24, prefAgeMax: 28, prefHeightMin: "5'2\"", prefHeightMax: "5'8\"",
+            prefLocation: "Punjab preferred", prefEdu: "Graduates and above",
+            prefIncome: "Any", prefCaste: "Khatri preferred", prefDiet: "Veg"
+        },
+        {
+            id: 6, name: "Rhea Ahluwalia", age: 26, gender: "Female", city: "Chandigarh", state: "Punjab", country: "India",
+            job: "Corporate Lawyer", category: "Legal", edu: "Masters",
+            image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800",
+            diet: "Non-Veg", height: "5'5\"", bio: "Balanced individual who loves literature and classical music. Practising corporate law with a focus on M&A. Seeks a partner who values both ambition and simplicity.",
+            family: "Both parents are retired government officials.", income: "21-25L", status: "Never Married", children: "No", manglik: "No",
+            eduInstitution: "Symbiosis Law School Pune", eduDegree: "LLM Corporate Law", eduYear: "2022",
+            jobCompany: "Shardul Amarchand Mangaldas", jobRole: "Associate Lawyer", jobYears: "3 years",
+            hobbies: "Classical music, book club, hiking",
+            religion: "Sikh", caste: "Khatri", subcaste: "Ahluwalia", gotra: "Shandilya",
+            grandfatherName: "S. Gurbachan Singh", grandmotherName: "Smt. Pritam Kaur",
+            fatherName: "S. Tejinder Ahluwalia", fatherOccupation: "Retired IPS Officer",
+            motherName: "Smt. Kavita Ahluwalia", motherOccupation: "Retired District Judge",
+            siblings: "1 Brother", siblingsOccupation: "Doctor, PGIMER",
+            familyType: "Nuclear", familyValues: "Moderate",
+            dob: "22 August 1998", tob: "04:10 PM", pob: "Chandigarh",
+            rashi: "Simha (Leo)", nakshatra: "Purva Phalguni", manglikDetail: "Non-Manglik",
+            prefAgeMin: 27, prefAgeMax: 34, prefHeightMin: "5'8\"", prefHeightMax: "6'2\"",
+            prefLocation: "Punjab, Delhi NCR, Mumbai", prefEdu: "Masters or above",
+            prefIncome: "20L+", prefCaste: "Open", prefDiet: "Any"
+        },
+        {
+            id: 7, name: "Arjun Dosanjh", age: 33, gender: "Male", city: "Jalandhar", state: "Punjab", country: "India",
+            job: "Restaurateur", category: "Business", edu: "Bachelors",
+            image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=800",
+            diet: "Non-Veg", height: "6'0\"", bio: "Foodie at heart, passionate about building sustainable businesses. Owns 3 restaurants across Punjab. Looking for a warm, family-oriented partner.",
+            family: "Well-settled business family in Jalandhar.", income: "26L+", status: "Never Married", children: "No", manglik: "No",
+            eduInstitution: "Lovely Professional University", eduDegree: "BBA Hospitality", eduYear: "2014",
+            jobCompany: "Dosanjh Food Ventures", jobRole: "Founder & CEO", jobYears: "8 years",
+            hobbies: "Culinary experiments, motorcycling, kabaddi",
+            religion: "Sikh", caste: "Jat", subcaste: "Dosanjh", gotra: "Sandhu",
+            grandfatherName: "S. Amar Singh Dosanjh", grandmotherName: "Smt. Charanjit Kaur",
+            fatherName: "S. Kulwant Dosanjh", fatherOccupation: "Business Owner",
+            motherName: "Smt. Manjit Dosanjh", motherOccupation: "Homemaker",
+            siblings: "2 Brothers", siblingsOccupation: "Both in family business",
+            familyType: "Joint", familyValues: "Traditional",
+            dob: "30 April 1991", tob: "07:00 AM", pob: "Jalandhar",
+            rashi: "Vrishabh (Taurus)", nakshatra: "Rohini", manglikDetail: "Non-Manglik",
+            prefAgeMin: 25, prefAgeMax: 31, prefHeightMin: "5'3\"", prefHeightMax: "5'9\"",
+            prefLocation: "Punjab preferred", prefEdu: "Any",
+            prefIncome: "Any", prefCaste: "Jat Sikh preferred", prefDiet: "Any"
+        },
+        {
+            id: 8, name: "Simran Gill", age: 28, gender: "Female", city: "Amritsar", state: "Punjab", country: "India",
+            job: "Fashion Stylist", category: "Arts", edu: "Bachelors",
+            image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=800",
+            diet: "Veg", height: "5'7\"", bio: "Creative soul who finds beauty in the details of everyday life. Styled for major Punjabi music videos and fashion weeks. Loves people who have a story to tell.",
+            family: "Nuclear family; father is a retired Colonel.", income: "6-10L", status: "Never Married", children: "No", manglik: "No",
+            eduInstitution: "Pearl Academy Delhi", eduDegree: "B.Des Fashion Design", eduYear: "2019",
+            jobCompany: "Self-employed / Freelance", jobRole: "Fashion & Wardrobe Stylist", jobYears: "5 years",
+            hobbies: "Vintage shopping, poetry, pottery",
+            religion: "Sikh", caste: "Jat", subcaste: "Gill", gotra: "Gill",
+            grandfatherName: "S. Nirmal Singh Gill", grandmotherName: "Smt. Surjit Kaur",
+            fatherName: "Col. (Retd.) Harmeet Gill", fatherOccupation: "Retired Army Colonel",
+            motherName: "Smt. Paramjit Gill", motherOccupation: "Boutique Owner",
+            siblings: "1 Sister", siblingsOccupation: "Dentist",
+            familyType: "Nuclear", familyValues: "Moderate",
+            dob: "11 December 1996", tob: "09:45 PM", pob: "Amritsar",
+            rashi: "Dhanu (Sagittarius)", nakshatra: "Moola", manglikDetail: "Non-Manglik",
+            prefAgeMin: 28, prefAgeMax: 35, prefHeightMin: "5'9\"", prefHeightMax: "6'3\"",
+            prefLocation: "Open", prefEdu: "Any",
+            prefIncome: "15L+", prefCaste: "Open", prefDiet: "Veg preferred"
+        },
+        {
+            id: 9, name: "Navdeep Brar", age: 31, gender: "Male", city: "Patiala", state: "Punjab", country: "India",
+            job: "Software Architect", category: "Tech", edu: "Masters",
+            image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800",
+            diet: "Veg", height: "5'9\"", bio: "Simple living, high thinking. Architect of scalable systems by day, tabla player by evening. Looking for a compatible life partner who values family.",
+            family: "Educated family; mother is a Principal.", income: "26L+", status: "Never Married", children: "No", manglik: "Yes",
+            eduInstitution: "BITS Pilani", eduDegree: "M.Tech Software Engineering", eduYear: "2017",
+            jobCompany: "Microsoft India", jobRole: "Principal Software Architect", jobYears: "7 years",
+            hobbies: "Tabla, chess, open-source development",
+            religion: "Sikh", caste: "Jat", subcaste: "Brar", gotra: "Brar",
+            grandfatherName: "S. Lakhwinder Brar", grandmotherName: "Smt. Daljit Kaur",
+            fatherName: "S. Sukhwinder Brar", fatherOccupation: "Retired Punjab Police (DSP)",
+            motherName: "Smt. Rajwinder Brar", motherOccupation: "School Principal",
+            siblings: "1 Brother", siblingsOccupation: "Civil Servant (IAS)",
+            familyType: "Nuclear", familyValues: "Moderate",
+            dob: "3 September 1993", tob: "12:30 PM", pob: "Patiala",
+            rashi: "Kanya (Virgo)", nakshatra: "Hasta", manglikDetail: "Anshik Manglik",
+            prefAgeMin: 25, prefAgeMax: 30, prefHeightMin: "5'2\"", prefHeightMax: "5'8\"",
+            prefLocation: "Punjab, Delhi NCR", prefEdu: "Graduates and above",
+            prefIncome: "Any", prefCaste: "Jat Sikh preferred", prefDiet: "Veg"
+        },
+        {
+            id: 10, name: "Jasleen Kaur", age: 29, gender: "Female", city: "Zirakpur", state: "Punjab", country: "India",
+            job: "Bank Manager", category: "Finance", edu: "Masters",
+            image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=800",
+            diet: "Veg", height: "5'3\"", bio: "Highly organized and family-oriented person. Managing a branch at 29 while staying grounded in values. Enjoys cooking, gardening and long drives.",
+            family: "Middle-class family with traditional values.", income: "11-15L", status: "Never Married", children: "No", manglik: "No",
+            eduInstitution: "Panjab University Chandigarh", eduDegree: "MBA Banking & Finance", eduYear: "2019",
+            jobCompany: "State Bank of India", jobRole: "Branch Manager", jobYears: "4 years",
+            hobbies: "Cooking, gardening, bhangra",
+            religion: "Sikh", caste: "Khatri", subcaste: "Arora", gotra: "Kapila",
+            grandfatherName: "S. Darshan Singh", grandmotherName: "Smt. Baljit Kaur",
+            fatherName: "S. Harjinder Singh", fatherOccupation: "Retired Bank Employee",
+            motherName: "Smt. Gurpreet Kaur", motherOccupation: "Homemaker",
+            siblings: "2 Brothers", siblingsOccupation: "Engineer & Teacher",
+            familyType: "Joint", familyValues: "Traditional",
+            dob: "17 February 1996", tob: "05:55 AM", pob: "Zirakpur",
+            rashi: "Kumbh (Aquarius)", nakshatra: "Shatabhisha", manglikDetail: "Non-Manglik",
+            prefAgeMin: 29, prefAgeMax: 35, prefHeightMin: "5'7\"", prefHeightMax: "6'2\"",
+            prefLocation: "Punjab, Haryana", prefEdu: "Graduates and above",
+            prefIncome: "15L+", prefCaste: "Khatri preferred", prefDiet: "Veg"
+        }
+    ];
+
+    // ─────────────────────────────────────────────
+    // FIX 6: localStorage with a note — IndexedDB migration planned
+    // ─────────────────────────────────────────────
+    let shortlistedIds = JSON.parse(localStorage.getItem('shortlisted')) || [];
+
+    function saveShortlist() {
+        localStorage.setItem('shortlisted', JSON.stringify(shortlistedIds));
+        // NOTE: localStorage clears on browser data wipe.
+        // Planned migration to IndexedDB for persistence.
+    }
+
+    // ─────────────────────────────────────────────
+    // FIX 2: Build filter options dynamically from profile data
+    // so they never go out of sync with actual profiles
+    // ─────────────────────────────────────────────
+    function getUniqueValues(field) {
+        return [...new Set(profiles.map(p => p[field]).filter(Boolean))].sort();
+    }
+
+    const uniqueStates   = getUniqueValues('state');
+    const uniqueCities   = getUniqueValues('city');
+    // FIX 3 & 4: Age range derived from actual data, not hardcoded
+    const allAges        = profiles.map(p => p.age);
+    const DATA_AGE_MIN   = Math.min(...allAges);
+    const DATA_AGE_MAX   = Math.max(...allAges);
+
+    // ─────────────────────────────────────────────
+    // HEIGHT UTILITIES
+    // Heights stored as strings e.g. "5'4\"" — convert to total
+    // inches for numeric comparison, display back as ft/in
+    // ─────────────────────────────────────────────
+    function heightToInches(str) {
+        // Handles formats: 5'4", 5'11", 6'0", 6'1"
+        const match = String(str).match(/(\d+)'(\d+)/);
+        if (!match) return 0;
+        return parseInt(match[1]) * 12 + parseInt(match[2]);
+    }
+
+    function inchesToDisplay(inches) {
+        const ft = Math.floor(inches / 12);
+        const in_ = inches % 12;
+        return `${ft}'${in_}"`;
+    }
+
+    // Build all heights present in data, sorted ascending
+    const allHeightInches = [...new Set(profiles.map(p => heightToInches(p.height)))].sort((a, b) => a - b);
+    const DATA_HEIGHT_MIN = Math.min(...allHeightInches);
+    const DATA_HEIGHT_MAX = Math.max(...allHeightInches);
+
+    function buildHeightOptions(selectedVal) {
+        return allHeightInches.map(h =>
+            `<option value="${h}" ${h === selectedVal ? 'selected' : ''}>${inchesToDisplay(h)}</option>`
+        ).join('');
+    }
+
+    // Build <option> tags for age selects covering full data range in steps
+    function buildAgeOptions(selectedVal, mode) {
+        const step = 1;
+        let html = '';
+        for (let a = DATA_AGE_MIN; a <= DATA_AGE_MAX + 5; a += step) {
+            const sel = a === selectedVal ? 'selected' : '';
+            html += `<option value="${a}" ${sel}>${a}</option>`;
+        }
+        return html;
+    }
+
+    // ─────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────
+    let activeGender = 'Female';
+    let currentView  = 'discovery';
+    let activeLayout = localStorage.getItem('layoutPref') || 'grid'; // 'grid' | 'list'
+
+    // ─────────────────────────────────────────────
+    // VIEW CONTROLLER
+    // ─────────────────────────────────────────────
+    function showDiscovery(skipPush) {
+        currentView = 'discovery';
+        updateNavState();
+        window.scrollTo(0, 0);
+        closeMobileMenu();
+        document.body.classList.remove('overflow-hidden');
+        if (!skipPush) history.pushState({ view: 'discovery' }, '');
+
+        // FIX 3 & 4: defaults span full data range
+        const defaultMin = DATA_AGE_MIN;
+        const defaultMax = DATA_AGE_MAX + 5;
+
+        document.getElementById('pageContent').innerHTML = `
+            <main class="max-w-7xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+                <div class="mb-10 sm:mb-16">
+                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3 sm:mb-4">Find your <span class="text-gray-300">better half.</span></h2>
+                    <p class="text-gray-500 max-w-xl text-base sm:text-lg leading-relaxed">Explore a curated list of verified professionals.</p>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-10 lg:gap-16">
+                    <!-- Sidebar / mobile bottom-sheet -->
+                    <aside id="filterSheet" class="hidden lg:block w-full lg:w-72 flex-shrink-0 no-print fixed lg:static inset-x-0 bottom-0 z-50 bg-white lg:bg-transparent rounded-t-3xl lg:rounded-none shadow-2xl lg:shadow-none max-h-[85vh] lg:max-h-none overflow-y-auto lg:overflow-visible">
+                        <div class="space-y-8 lg:sticky lg:top-32 lg:max-h-[80vh] lg:overflow-y-auto lg:pr-4 filter-sidebar px-5 pt-5 pb-6 lg:p-0">
+                            <div class="flex justify-between items-center lg:items-end border-b border-gray-100 pb-4">
+                                <h3 class="font-bold text-xl">Filters</h3>
+                                <div class="flex items-center gap-4">
+                                    <button onclick="resetFilters()" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-rose-500">Reset</button>
+                                    <button onclick="closeFilterSheet()" aria-label="Close filters" class="lg:hidden w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- FIX 5: Search bar -->
+                            <div>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Search</h4>
+                                <input
+                                    id="searchInput"
+                                    type="text"
+                                    placeholder="Name or profession..."
+                                    oninput="applyFilters()"
+                                    class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-black transition-colors"
+                                />
+                            </div>
+
+                            <!-- Looking For -->
+                            <div>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">Looking For</h4>
+                                <div class="flex p-1 bg-gray-100 rounded-2xl" id="genderToggle">
+                                    <button onclick="updateGender('Female')" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all ${activeGender === 'Female' ? 'bg-white shadow-sm text-black' : 'text-gray-400'}">Brides</button>
+                                    <button onclick="updateGender('Male')" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all ${activeGender === 'Male' ? 'bg-white shadow-sm text-black' : 'text-gray-400'}">Grooms</button>
+                                </div>
+                            </div>
+
+                            <!-- FIX 3 & 4: Age range with full range options -->
+                            <div>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">Age Range</h4>
+                                <div class="flex items-center gap-2">
+                                    <select id="ageMin" onchange="applyFilters()" class="sk-select flex-1 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2 text-xs font-bold">
+                                        ${buildAgeOptions(defaultMin, 'min')}
+                                    </select>
+                                    <span class="text-gray-300 text-xs">to</span>
+                                    <select id="ageMax" onchange="applyFilters()" class="sk-select flex-1 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2 text-xs font-bold">
+                                        ${buildAgeOptions(defaultMax, 'max')}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Height Range -->
+                            <div>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">Height Range</h4>
+                                <div class="flex items-center gap-2">
+                                    <select id="heightMin" onchange="applyFilters()" class="sk-select flex-1 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2 text-xs font-bold">
+                                        ${buildHeightOptions(DATA_HEIGHT_MIN)}
+                                    </select>
+                                    <span class="text-gray-300 text-xs">to</span>
+                                    <select id="heightMax" onchange="applyFilters()" class="sk-select flex-1 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2 text-xs font-bold">
+                                        ${buildHeightOptions(DATA_HEIGHT_MAX)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Location options built from data -->
+                            <div class="space-y-4 pt-4 border-t border-gray-50">
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Location</h4>
+                                <select id="countryFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
+                                    <option value="All">All Countries</option>
+                                    <option value="India">India</option>
+                                </select>
+                                <select id="stateFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
+                                    <option value="All">All States</option>
+                                    ${uniqueStates.map(s => `<option value="${s}">${s}</option>`).join('')}
+                                </select>
+                                <select id="cityFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
+                                    <option value="All">All Cities</option>
+                                    ${uniqueCities.map(c => `<option value="${c}">${c}</option>`).join('')}
+                                </select>
+                            </div>
+
+                            <!-- Professional -->
+                            <div class="space-y-4 pt-4 border-t border-gray-50">
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Professional</h4>
+                                <select id="incomeFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
+                                    <option value="All">Annual Income</option>
+                                    <option value="0-5L">0–5L</option>
+                                    <option value="6-10L">6–10L</option>
+                                    <option value="11-15L">11–15L</option>
+                                    <option value="16-20L">16–20L</option>
+                                    <option value="21-25L">21–25L</option>
+                                    <option value="26L+">26L+</option>
+                                </select>
+                                <select id="eduFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
+                                    <option value="All">Education</option>
+                                    <option value="Bachelors">Bachelors</option>
+                                    <option value="Masters">Masters</option>
+                                    <option value="Doctorate">Doctorate</option>
+                                </select>
+                            </div>
+
+                            <!-- Lifestyle -->
+                            <div class="space-y-4 pt-4 border-t border-gray-50">
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Social & Lifestyle</h4>
+                                <select id="dietFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
+                                    <option value="All">Diet</option>
+                                    <option value="Veg">Vegetarian</option>
+                                    <option value="Non-Veg">Non-Vegetarian</option>
+                                </select>
+                                <select id="statusFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
+                                    <option value="All">Marital Status</option>
+                                    <option value="Never Married">Never Married</option>
+                                    <option value="Divorced">Divorced</option>
+                                    <option value="Widowed">Widowed</option>
+                                    <option value="Awaiting Divorce">Awaiting Divorce</option>
+                                </select>
+                                <select id="manglikFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
+                                    <option value="All">Manglik</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <button onclick="closeFilterSheet()" id="showResultsBtn" class="lg:hidden w-full bg-black text-white rounded-2xl py-3.5 text-xs font-bold uppercase tracking-widest">Show Results</button>
+                        </div>
+                    </aside>
+
+                    <!-- Backdrop behind mobile filter sheet -->
+                    <div id="filterBackdrop" class="hidden lg:hidden fixed inset-0 bg-black/40 z-40 no-print" onclick="closeFilterSheet()"></div>
+
+                    <!-- Grid -->
+                    <div class="flex-1 pb-24 lg:pb-0">
+                        <div class="flex justify-between items-center mb-8">
+                            <p class="text-sm font-bold text-gray-400 uppercase tracking-widest" id="resultsLabel">Discovering matches...</p>
+                        <div class="flex p-1 bg-gray-100 rounded-2xl gap-1" id="layoutToggle">
+                                <button
+                                    onclick="setLayout('grid')"
+                                    id="btnGrid"
+                                    title="Grid view"
+                                    class="w-9 h-9 flex items-center justify-center rounded-xl transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                                </button>
+                                <button
+                                    onclick="setLayout('list')"
+                                    id="btnList"
+                                    title="List view"
+                                    class="w-9 h-9 flex items-center justify-center rounded-xl transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="listingGrid"></div>
+                    </div>
+                </div>
+
+                <!-- Fixed mobile filter trigger -->
+                <div class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-gray-100 px-5 py-3 no-print" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom, 0px));">
+                    <button onclick="openFilterSheet()" class="w-full flex items-center justify-center gap-2 bg-black text-white rounded-2xl py-3.5 text-xs font-bold uppercase tracking-widest">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                        Filters
+                    </button>
+                </div>
+            </main>
+        `;
+        applyFilters();
+    }
+
+    function clearAllShortlisted() {
+        if (!confirm('Remove all shortlisted profiles? This cannot be undone.')) return;
+        shortlistedIds = [];
+        saveShortlist();
+        updateNavBadge();
+        showShortlisted();
+    }
+
+    function showShortlisted(skipPush) {
+        currentView = 'shortlisted';
+        updateNavState();
+        window.scrollTo(0, 0);
+        closeMobileMenu();
+        document.body.classList.remove('overflow-hidden');
+        if (!skipPush) history.pushState({ view: 'shortlisted' }, '');
+        const data = profiles.filter(p => shortlistedIds.includes(p.id));
+
+        document.getElementById('pageContent').innerHTML = `
+            <main class="max-w-7xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+                <div class="mb-10 sm:mb-16 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <div>
+                        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3 sm:mb-4">Your <span class="text-gray-300">Shortlist.</span></h2>
+                        <p class="text-gray-500 max-w-xl text-base sm:text-lg leading-relaxed">Profiles you've saved to review later.</p>
+                    </div>
+                    ${data.length > 0 ? `
+                        <button onclick="clearAllShortlisted()"
+                            class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-rose-500 transition-colors mb-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Clear All
+                        </button>
+                    ` : ''}
+                </div>
+                <div class="flex-1">
+                    ${data.length > 0 ? `
+                        <div id="listingGrid"></div>
+                    ` : `
+                        <div class="text-center py-32 border-2 border-dashed border-gray-100 rounded-[3rem]">
+                            <p class="text-gray-400 font-medium mb-6">You haven't shortlisted any profiles yet.</p>
+                            <button onclick="showDiscovery()" class="bg-black text-white px-8 py-3 rounded-2xl text-xs font-bold hover:bg-zinc-800 transition-all">Browse Profiles</button>
+                        </div>
+                    `}
+                </div>
+            </main>
+        `;
+        if (data.length > 0) renderGrid(data);
+    }
+
+    function viewProfile(id, skipPush, fromView) {
+        window.scrollTo(0, 0);
+        closeMobileMenu();
+        document.body.classList.remove('overflow-hidden');
+        if (fromView) currentView = fromView;
+        if (!skipPush) history.pushState({ view: 'detail', id: id, from: currentView }, '');
+        const p       = profiles.find(p => p.id === id);
+        const isLiked = shortlistedIds.includes(id);
+        const heartFill = isLiked ? 'fill-rose-500 text-rose-500' : 'text-gray-400';
+
+        // Helper: render a section heading
+        const sectionHead = (title, icon) => `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:10px;border-bottom:0.5px solid #f3f4f6;">
+                <span style="font-size:16px;">${icon}</span>
+                <h2 style="margin:0;font-size:14px;font-weight:700;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.06em;">${title}</h2>
+            </div>`;
+
+        // Helper: render a key/value row
+        const field = (label, value) => value && value !== '—' ? `
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:0.5px solid #f9fafb;">
+                <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;flex-shrink:0;margin-right:12px;">${label}</span>
+                <span style="font-size:13px;font-weight:500;color:#1a1a1a;text-align:right;">${value}</span>
+            </div>` : '';
+
+        // Helper: section card wrapper
+        const section = (head, fields) => `
+            <div style="background:#fff;border-radius:16px;border:0.5px solid #e5e7eb;padding:20px 22px;margin-bottom:16px;">
+                ${head}${fields}
+            </div>`;
+
+        document.getElementById('pageContent').innerHTML = `
+            <main class="max-w-7xl mx-auto px-5 sm:px-8 py-8 sm:py-12 profile-detail-view">
+
+                <!-- Top bar -->
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 sm:mb-10 no-print">
+                    <button onclick="${currentView === 'shortlisted' ? 'showShortlisted()' : 'showDiscovery()'}"
+                        class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        Back to ${currentView === 'shortlisted' ? 'Shortlist' : 'Listings'}
+                    </button>
+                    <div class="flex gap-3">
+                        <button onclick="shareOnWhatsApp(${p.id})"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-green-50 text-green-600 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-green-100 transition-all">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            Share
+                        </button>
+                        <button onclick="window.print()"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-zinc-100 text-black rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Two-column layout: stacked on mobile, 340px+1fr from lg up -->
+                <div class="sk-detail-grid">
+
+                    <!-- LEFT: profile card (sticky from lg up) -->
+                    <div class="sk-detail-sticky">
+                        <!-- Photo -->
+                        <div style="position:relative;border-radius:24px;overflow:hidden;aspect-ratio:3/4;margin-bottom:16px;box-shadow:0 20px 50px rgba(0,0,0,0.1);">
+                            <img src="${p.image}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                            <!-- Verified badge -->
+                            <div style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.92);font-size:10px;font-weight:600;letter-spacing:0.06em;padding:4px 12px;border-radius:99px;color:#444;border:0.5px solid rgba(0,0,0,0.08);text-transform:uppercase;">Verified</div>
+                            <!-- Heart -->
+                            <button onclick="toggleShortlist(${p.id}, event)"
+                                style="position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.92);border:0.5px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;"
+                                class="no-print" aria-label="Shortlist">
+                                <svg style="width:16px;height:16px;" class="${heartFill}" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Quick details card -->
+                        <div style="background:#fff;border-radius:16px;border:0.5px solid #e5e7eb;padding:20px 22px;">
+                            <h1 style="margin:0 0 2px;font-size:22px;font-weight:700;color:#1a1a1a;">${p.name}</h1>
+                            <p style="margin:0 0 16px;font-size:13px;color:#9ca3af;">${p.age} yrs • ${p.height} • ${p.city}, ${p.state}</p>
+                            ${field('Occupation', p.job)}
+                            ${field('Education', p.edu)}
+                            ${field('Income', p.income + ' per annum')}
+                            ${field('Diet', p.diet)}
+                            ${field('Marital Status', p.status)}
+                            ${field('Children', p.children)}
+                            ${field('Manglik', p.manglik)}
+                            <button class="w-full no-print"
+                                style="margin-top:16px;width:100%;background:#111;color:#fff;border:none;border-radius:12px;padding:12px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.02em;">
+                                Connect with ${p.name.split(' ')[0]}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Detail sections -->
+                    <div>
+
+                        <!-- About -->
+                        ${section(sectionHead('About', '👤'), `
+                            <p style="font-size:14px;color:#6b7280;line-height:1.75;margin:0 0 14px;">${p.bio}</p>
+                            ${field('Hobbies & Interests', p.hobbies)}
+                        `)}
+
+                        <!-- Education & Career -->
+                        ${section(sectionHead('Education & Career', '💼'), `
+                            ${field('Institution', p.eduInstitution)}
+                            ${field('Degree', p.eduDegree)}
+                            ${field('Graduation Year', p.eduYear)}
+                            <div style="height:10px;"></div>
+                            ${field('Company', p.jobCompany)}
+                            ${field('Role', p.jobRole)}
+                            ${field('Experience', p.jobYears)}
+                            ${field('Annual Income', p.income + ' per annum')}
+                        `)}
+
+                        <!-- Religion & Caste -->
+                        ${section(sectionHead('Religion & Caste', '🕌'), `
+                            ${field('Religion', p.religion)}
+                            ${field('Caste', p.caste)}
+                            ${field('Sub-caste', p.subcaste)}
+                            ${field('Gotra', p.gotra)}
+                        `)}
+
+                        <!-- Family Details -->
+                        ${section(sectionHead('Family Details', '🏠'), `
+                            ${field('Family Type', p.familyType)}
+                            ${field('Family Values', p.familyValues)}
+                            <div style="height:10px;"></div>
+                            ${field('Grandfather', p.grandfatherName)}
+                            ${field('Grandmother', p.grandmotherName)}
+                            <div style="height:10px;"></div>
+                            ${field('Father', p.fatherName)}
+                            ${field('Father\'s Occupation', p.fatherOccupation)}
+                            ${field('Mother', p.motherName)}
+                            ${field('Mother\'s Occupation', p.motherOccupation)}
+                            <div style="height:10px;"></div>
+                            ${field('Siblings', p.siblings)}
+                            ${field('Siblings\' Occupation', p.siblingsOccupation)}
+                        `)}
+
+                        <!-- Astro Details -->
+                        ${section(sectionHead('Astro Details', '⭐'), `
+                            ${field('Date of Birth', p.dob)}
+                            ${field('Time of Birth', p.tob)}
+                            ${field('Place of Birth', p.pob)}
+                            ${field('Rashi', p.rashi)}
+                            ${field('Nakshatra', p.nakshatra)}
+                            ${field('Manglik', p.manglikDetail)}
+                        `)}
+
+                        <!-- Partner Preferences -->
+                        ${section(sectionHead('Partner Preferences', '💫'), `
+                            ${field('Age Range', `${p.prefAgeMin} – ${p.prefAgeMax} years`)}
+                            ${field('Height Range', `${p.prefHeightMin} – ${p.prefHeightMax}`)}
+                            ${field('Location', p.prefLocation)}
+                            ${field('Education', p.prefEdu)}
+                            ${field('Income', p.prefIncome)}
+                            ${field('Caste', p.prefCaste)}
+                            ${field('Diet', p.prefDiet)}
+                        `)}
+
+                    </div>
+                </div>
+
+                <div class="print-only mt-10 pt-10 border-t text-center text-xs text-gray-400">
+                    Generated by SoulKnot Premium Matrimony
+                </div>
+            </main>
+        `;
+    }
+
+    // ─────────────────────────────────────────────
+    // SHORTLIST
+    // ─────────────────────────────────────────────
+    function toggleShortlist(id, event) {
+        if (event) event.stopPropagation();
+        const index = shortlistedIds.indexOf(id);
+        if (index > -1) shortlistedIds.splice(index, 1);
+        else shortlistedIds.push(id);
+        saveShortlist();
+        updateNavBadge();
+
+        if (document.querySelector('.profile-detail-view')) viewProfile(id, true, currentView);
+        else if (currentView === 'shortlisted') showShortlisted();
+        else applyFilters();
+    }
+
+    // ─────────────────────────────────────────────
+    // NAV
+    // ─────────────────────────────────────────────
+    function updateNavState() {
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const matches = link.dataset.view === currentView;
+            link.classList.toggle('text-black', matches);
+            link.classList.toggle('text-gray-400', !matches);
+        });
+    }
+
+    function updateNavBadge() {
+        const count = shortlistedIds.length;
+        ['navBadge', 'navBadgeMobile'].forEach(elId => {
+            const badge = document.getElementById(elId);
+            if (!badge) return;
+            badge.textContent = count;
+            badge.classList.toggle('hidden', count === 0);
+        });
+    }
+
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('hidden');
+        document.getElementById('menuIconOpen').classList.toggle('hidden');
+        document.getElementById('menuIconClose').classList.toggle('hidden');
+    }
+
+    function closeMobileMenu() {
+        document.getElementById('mobileMenu').classList.add('hidden');
+        document.getElementById('menuIconOpen').classList.remove('hidden');
+        document.getElementById('menuIconClose').classList.add('hidden');
+    }
+
+    function openFilterSheet() {
+        document.getElementById('filterSheet')?.classList.remove('hidden');
+        document.getElementById('filterBackdrop')?.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeFilterSheet() {
+        document.getElementById('filterSheet')?.classList.add('hidden');
+        document.getElementById('filterBackdrop')?.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    // ─────────────────────────────────────────────
+    // FILTERS
+    // ─────────────────────────────────────────────
+    function updateGender(gender) {
+        activeGender = gender;
+        showDiscovery();
+    }
+
+    function resetFilters() {
+        const el = id => document.getElementById(id);
+        ['countryFilter','stateFilter','cityFilter','incomeFilter',
+         'eduFilter','dietFilter','statusFilter','manglikFilter']
+            .forEach(id => { if(el(id)) el(id).value = 'All'; });
+
+        // FIX 4: reset to actual data-derived defaults
+        if (el('ageMin'))    el('ageMin').value    = String(DATA_AGE_MIN);
+        if (el('ageMax'))    el('ageMax').value    = String(DATA_AGE_MAX + 5);
+        if (el('heightMin')) el('heightMin').value = String(DATA_HEIGHT_MIN);
+        if (el('heightMax')) el('heightMax').value = String(DATA_HEIGHT_MAX);
+        if (el('searchInput')) el('searchInput').value = '';
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const val   = id => document.getElementById(id)?.value || 'All';
+        const ageMin  = parseInt(document.getElementById('ageMin')?.value  || DATA_AGE_MIN);
+        const ageMax  = parseInt(document.getElementById('ageMax')?.value  || DATA_AGE_MAX + 5);
+        const hMin    = parseInt(document.getElementById('heightMin')?.value || DATA_HEIGHT_MIN);
+        const hMax    = parseInt(document.getElementById('heightMax')?.value || DATA_HEIGHT_MAX);
+
+        // FIX 5: search query
+        const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+
+        const filtered = profiles.filter(p => {
+            if (p.gender  !== activeGender)                        return false;
+            if (p.age < ageMin || p.age > ageMax)                  return false;
+            const pH = heightToInches(p.height);
+            if (pH < hMin || pH > hMax)                            return false;
+            if (val('countryFilter') !== 'All' && p.country !== val('countryFilter')) return false;
+            if (val('stateFilter')   !== 'All' && p.state   !== val('stateFilter'))   return false;
+            if (val('cityFilter')    !== 'All' && p.city    !== val('cityFilter'))     return false;
+            if (val('incomeFilter')  !== 'All' && p.income  !== val('incomeFilter'))  return false;
+            if (val('eduFilter')     !== 'All' && p.edu     !== val('eduFilter'))      return false;
+            if (val('dietFilter')    !== 'All' && p.diet    !== val('dietFilter'))     return false;
+            if (val('statusFilter')  !== 'All' && p.status  !== val('statusFilter'))  return false;
+            if (val('manglikFilter') !== 'All' && p.manglik !== val('manglikFilter')) return false;
+
+            // FIX 5: match name or job
+            if (query) {
+                const haystack = `${p.name} ${p.job}`.toLowerCase();
+                if (!haystack.includes(query)) return false;
+            }
+
+            return true;
+        });
+
+        renderGrid(filtered);
+
+        const showResultsBtn = document.getElementById('showResultsBtn');
+        if (showResultsBtn) showResultsBtn.textContent = `Show ${filtered.length} Result${filtered.length !== 1 ? 's' : ''}`;
+    }
+
+    // ─────────────────────────────────────────────
+    // LAYOUT TOGGLE
+    // ─────────────────────────────────────────────
+    function updateToggleButtons() {
+        const btnGrid = document.getElementById('btnGrid');
+        const btnList = document.getElementById('btnList');
+        if (!btnGrid || !btnList) return;
+        const base     = 'w-9 h-9 flex items-center justify-center rounded-xl transition-all';
+        const active   = base + ' bg-white shadow-sm text-black';
+        const inactive = base + ' text-gray-400 hover:text-black';
+        btnGrid.className = activeLayout === 'grid' ? active : inactive;
+        btnList.className = activeLayout === 'list' ? active : inactive;
+    }
+
+    function setLayout(mode) {
+        activeLayout = mode;
+        localStorage.setItem('layoutPref', mode);
+        updateToggleButtons();
+        applyFilters();
+    }
+
+    // ─────────────────────────────────────────────
+    // RENDER GRID (supports grid + list layouts)
+    // ─────────────────────────────────────────────
+    function renderGrid(data) {
+        const grid  = document.getElementById('listingGrid');
+        const label = document.getElementById('resultsLabel');
+        if (!grid) return;
+
+        if (label) label.innerText = `${data.length} Match${data.length !== 1 ? 'es' : ''} Found`;
+
+        if (data.length === 0) {
+            grid.className = '';
+            grid.innerHTML = `<div class="py-20 text-center text-gray-300 italic">No matches found for the selected criteria.</div>`;
+            return;
+        }
+
+        if (activeLayout === 'grid') {
+            if (currentView === 'shortlisted') {
+                // Full-width grid — no sidebar; auto-fill reflows 1→2→3→4 cols by viewport
+                grid.className = '';
+                grid.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1.25rem;';
+            } else {
+                // Alongside sidebar; auto-fill reflows 1→2→3 cols by viewport
+                grid.className = '';
+                grid.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.5rem;';
+            }
+            grid.innerHTML = data.map(p => renderGridCard(p)).join('');
+        } else {
+            grid.className = '';
+            grid.style.cssText = 'display:flex; flex-direction:column; gap:1rem;';
+            grid.innerHTML = data.map(p => renderListCard(p)).join('');
+        }
+
+        updateToggleButtons();
+    }
+
+    // ── Option A: Tall portrait grid card (Version 2) ──
+    function renderGridCard(p) {
+        const isLiked  = shortlistedIds.includes(p.id);
+        const bioSnip  = p.bio.length > 62 ? p.bio.slice(0, 62).trimEnd() + '…' : p.bio;
+        const heartFill = isLiked ? 'fill-rose-500 text-rose-500' : 'text-gray-400';
+        return `
+            <div class="profile-card group cursor-pointer" onclick="viewProfile(${p.id})"
+                 style="background:#fff; border-radius:20px; border:0.5px solid #e5e7eb; overflow:hidden;">
+
+                <!-- Photo -->
+                <div style="position:relative; aspect-ratio:3/4; overflow:hidden;">
+                    <img src="${p.image}"
+                         style="width:100%; height:100%; object-fit:cover; object-position:top; display:block; transition:transform 0.5s ease;"
+                         class="group-hover:scale-105" loading="lazy">
+
+                    <!-- Top bar: verified left, heart right -->
+                    <div style="position:absolute; top:12px; left:12px; right:12px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="background:rgba(255,255,255,0.92); font-size:10px; font-weight:600; letter-spacing:0.06em; padding:4px 12px; border-radius:99px; color:#444; border:0.5px solid rgba(0,0,0,0.08); text-transform:uppercase;">
+                            Verified
+                        </span>
+                        <button onclick="toggleShortlist(${p.id}, event)"
+                                style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.92); border:0.5px solid rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background 0.2s; flex-shrink:0;"
+                                aria-label="Shortlist ${p.name}">
+                            <svg class="w-4 h-4 ${heartFill}" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div style="padding:14px 16px 0;">
+                    <!-- Name row with height -->
+                    <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                        <h3 style="margin:0; font-size:17px; font-weight:700; color:#1a1a1a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}, ${p.age}</h3>
+                        <span style="font-size:13px; font-weight:600; color:#6b7280; flex-shrink:0; margin-left:8px;">${p.height}</span>
+                    </div>
+                    <!-- Job -->
+                    <p style="margin:3px 0 6px; font-size:13px; font-weight:600; color:#b05070;">${p.job}</p>
+                    <!-- Bio snippet -->
+                    <p style="margin:0 0 14px; font-size:12px; color:#9ca3af; line-height:1.5; overflow:hidden; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical;">${bioSnip}</p>
+                </div>
+
+                <!-- Footer bar -->
+                <div class="sk-footer-bar">
+                    <div style="display:flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; flex-shrink:0;">
+                        <svg style="width:13px;height:13px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"/></svg>
+                        ${p.edu}
+                        <span style="width:3px;height:3px;border-radius:50%;background:#d1d5db;display:inline-block;flex-shrink:0;"></span>
+                        <svg style="width:13px;height:13px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        ${p.city}
+                    </div>
+                    <button onclick="viewProfile(${p.id})" class="sk-view-btn" aria-label="View ${p.name}'s profile">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        View
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // ── Option B: Horizontal list card ─────────────
+    function renderListCard(p) {
+        const isLiked = shortlistedIds.includes(p.id);
+        return `
+            <div class="profile-card group cursor-pointer flex items-stretch rounded-[1.5rem] overflow-hidden border border-gray-100 bg-white hover:border-gray-200" onclick="viewProfile(${p.id})">
+                <!-- Photo -->
+                <div class="relative w-20 sm:w-28 flex-shrink-0 overflow-hidden">
+                    <img src="${p.image}" class="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" loading="lazy">
+                </div>
+                <!-- Content -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 flex-1 px-4 py-4 sm:px-6 sm:py-5 min-w-0">
+                    <div class="min-w-0">
+                        <h3 class="text-base sm:text-lg font-bold tracking-tight truncate">${p.name}, ${p.age}</h3>
+                        <p class="text-rose-500 font-bold text-sm mt-0.5 mb-3">${p.job}</p>
+                        <div class="flex flex-wrap gap-x-5 gap-y-1">
+                            <span class="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                ${p.city}
+                            </span>
+                            <span class="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                ${p.height}
+                            </span>
+                            <span class="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                ${p.income}
+                            </span>
+                            <span class="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                                ${p.status}
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Right actions -->
+                    <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 flex-shrink-0">
+                        <button onclick="toggleShortlist(${p.id}, event)" class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center hover:bg-white border border-gray-100 transition-all">
+                            <svg class="w-5 h-5 ${isLiked ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </button>
+                        <div class="sk-view-wrap">
+                            <button onclick="viewProfile(${p.id}); event.stopPropagation();" class="sk-view-btn" aria-label="View ${p.name}'s profile">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // ─────────────────────────────────────────────
+    // SHARE — FIX 1: emojis as direct UTF-8 characters
+    // ─────────────────────────────────────────────
+    function shareOnWhatsApp(id) {
+        const p = profiles.find(p => p.id === id);
+        const line    = (label, value) => `*${label}:* ${value}`;
+        const divider = `──────────────────`;
+        const br      = '%0A'; // explicit encoded newline — reliable across all WhatsApp clients
+
+        const parts = [
+            `✨ *SoulKnot — New Match* ✨`,
+            divider,
+            line(`Name`,           p.name),
+            line(`Age`,            `${p.age} years`),
+            line(`Height`,         p.height),
+            line(`Location`,       `${p.city}, ${p.state}`),
+            ``,
+            line(`Profession`,     p.job),
+            line(`Education`,      p.edu),
+            line(`Annual Income`,  p.income),
+            ``,
+            line(`Diet`,           p.diet),
+            line(`Marital Status`, p.status),
+            line(`Manglik`,        p.manglik),
+            divider,
+            `🔗 *Full Profile:* https://soulknot.matrimony/profile/${p.id}`
+        ];
+
+        // Encode each part individually, then join with %0A
+        const encoded = parts
+            .map(part => encodeURIComponent(part))
+            .join(br);
+
+        window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    }
+
+    // ─────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────
+    window.addEventListener('popstate', (e) => {
+        const state = e.state;
+        if (state && state.view === 'detail') {
+            viewProfile(state.id, true, state.from);
+        } else if (state && state.view === 'shortlisted') {
+            showShortlisted(true);
+        } else {
+            showDiscovery(true);
+        }
+    });
+
+    window.onload = () => {
+        history.replaceState({ view: 'discovery' }, '');
+        showDiscovery(true);
+        updateNavBadge();
+    };
+    </script>
+</body>
+</html>
