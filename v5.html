@@ -155,6 +155,52 @@
             font-weight: 500;
         }
 
+        /* ── Checkbox-dropdown multi-select filter ── */
+        .sk-dd { position: relative; }
+        .sk-dd-trigger {
+            appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 14px;
+            padding-right: 28px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background-color 0.2s ease, background-image 0.2s ease;
+        }
+        .sk-dd-trigger.sk-dd-open {
+            border-color: #000 !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='18 15 12 9 6 15'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+        .sk-dd-trigger .sk-dd-count {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 18px; height: 18px; padding: 0 5px;
+            background: #111; color: #fff; border-radius: 99px;
+            font-size: 10px; font-weight: 700; margin-left: 6px;
+        }
+        .sk-dd-panel {
+            position: absolute; left: 0; right: 0; top: calc(100% + 6px);
+            background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+            z-index: 30; padding: 10px;
+        }
+        .sk-dd-options { max-height: 220px; overflow-y: auto; }
+        .sk-dd-option {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 6px; border-radius: 8px; cursor: pointer;
+            font-size: 13px; font-weight: 500; color: #1a1a1a;
+        }
+        .sk-dd-option:hover { background: #f9fafb; }
+        .sk-dd-option input[type="checkbox"] {
+            width: 15px; height: 15px; accent-color: #111; cursor: pointer; flex-shrink: 0;
+        }
+        .sk-dd-apply {
+            width: 100%; margin-top: 8px; background: #111; color: #fff;
+            border: none; border-radius: 10px; padding: 9px; font-size: 11px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+            cursor: pointer;
+        }
+        .sk-dd-apply:hover { background: #333; }
+
         /* ── Mobile nav menu (force-hidden at desktop widths regardless of toggle state) ── */
         @media (min-width: 1024px) {
             #mobileMenu { display: none !important; }
@@ -476,6 +522,111 @@
     const uniqueCastes    = getUniqueValues('caste');
     const uniqueSubcastes = getUniqueValues('subcaste');
     const uniqueGotras    = getUniqueValues('gotra');
+
+    // ─────────────────────────────────────────────
+    // MULTI-SELECT CHECKBOX-DROPDOWN FILTERS
+    // Each entry: which profile field it filters, its options,
+    // and which sidebar section it renders under.
+    // ─────────────────────────────────────────────
+    const FILTER_CONFIGS = [
+        { id: 'countryFilter',  field: 'country',  label: 'Country',        section: 'Location',            options: ['India'] },
+        { id: 'stateFilter',    field: 'state',    label: 'State',          section: 'Location',            options: uniqueStates },
+        { id: 'cityFilter',     field: 'city',     label: 'City',           section: 'Location',            options: uniqueCities },
+        { id: 'incomeFilter',   field: 'income',   label: 'Annual Income',  section: 'Professional',        options: ['0-5L','6-10L','11-15L','16-20L','21-25L','26L+'] },
+        { id: 'eduFilter',      field: 'edu',      label: 'Education',      section: 'Professional',        options: ['Bachelors','Masters','Doctorate'] },
+        { id: 'dietFilter',     field: 'diet',     label: 'Diet',           section: 'Social & Lifestyle',  options: ['Veg','Non-Veg'] },
+        { id: 'statusFilter',   field: 'status',   label: 'Marital Status', section: 'Social & Lifestyle',  options: ['Never Married','Divorced','Widowed','Awaiting Divorce'] },
+        { id: 'manglikFilter',  field: 'manglik',  label: 'Manglik',        section: 'Social & Lifestyle',  options: ['Yes','No'] },
+        { id: 'religionFilter', field: 'religion', label: 'Religion',       section: 'Religion & Caste',    options: uniqueReligions },
+        { id: 'casteFilter',    field: 'caste',    label: 'Caste',          section: 'Religion & Caste',    options: uniqueCastes },
+        { id: 'subcasteFilter', field: 'subcaste', label: 'Sub-caste',      section: 'Religion & Caste',    options: uniqueSubcastes },
+        { id: 'gotraFilter',    field: 'gotra',    label: 'Gotra',          section: 'Religion & Caste',    options: uniqueGotras }
+    ];
+
+    // Persists across re-renders (module-level, not reset by showDiscovery)
+    const selectedValues = FILTER_CONFIGS.reduce((acc, cfg) => { acc[cfg.id] = []; return acc; }, {});
+    let openDropdownId = null;
+
+    function renderCheckboxDropdown(cfg) {
+        const selected = selectedValues[cfg.id];
+        return `
+            <div class="sk-dd" data-filter-id="${cfg.id}">
+                <button type="button" onclick="toggleDropdown('${cfg.id}')" id="${cfg.id}Trigger"
+                    class="sk-select sk-dd-trigger w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium text-left">
+                    <span id="${cfg.id}Label">${ddLabelText(cfg)}</span>
+                </button>
+                <div id="${cfg.id}Panel" class="sk-dd-panel hidden">
+                    <div class="sk-dd-options">
+                        ${cfg.options.map(opt => `
+                            <label class="sk-dd-option">
+                                <input type="checkbox" data-filter-id="${cfg.id}" value="${opt}"
+                                    ${selected.includes(opt) ? 'checked' : ''}
+                                    onchange="toggleCheckboxOption('${cfg.id}', '${opt}', this.checked)">
+                                <span>${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <button type="button" onclick="applyDropdownFilter('${cfg.id}')" class="sk-dd-apply">Apply</button>
+                </div>
+            </div>`;
+    }
+
+    function ddLabelText(cfg) {
+        const selected = selectedValues[cfg.id];
+        if (selected.length === 0) return cfg.label;
+        if (selected.length === 1) return selected[0];
+        return `${selected[0]} +${selected.length - 1}`;
+    }
+
+    function updateDropdownLabel(id) {
+        const cfg   = FILTER_CONFIGS.find(c => c.id === id);
+        const label = document.getElementById(id + 'Label');
+        if (cfg && label) label.textContent = ddLabelText(cfg);
+    }
+
+    function renderFilterSection(sectionTitle) {
+        const cfgs = FILTER_CONFIGS.filter(c => c.section === sectionTitle);
+        return `
+            <div class="space-y-4 pt-4 border-t border-gray-50">
+                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">${sectionTitle}</h4>
+                ${cfgs.map(cfg => renderCheckboxDropdown(cfg)).join('')}
+            </div>`;
+    }
+
+    function toggleDropdown(id) {
+        if (openDropdownId === id) { closeDropdown(id, true); return; }
+        if (openDropdownId) closeDropdown(openDropdownId, true);
+        openDropdownId = id;
+        document.getElementById(id + 'Panel')?.classList.remove('hidden');
+        document.getElementById(id + 'Trigger')?.classList.add('sk-dd-open');
+    }
+
+    function closeDropdown(id, skipApply) {
+        document.getElementById(id + 'Panel')?.classList.add('hidden');
+        document.getElementById(id + 'Trigger')?.classList.remove('sk-dd-open');
+        if (openDropdownId === id) openDropdownId = null;
+        if (!skipApply) applyFilters();
+    }
+
+    function toggleCheckboxOption(id, value, checked) {
+        const arr = selectedValues[id];
+        const idx = arr.indexOf(value);
+        if (checked && idx === -1) arr.push(value);
+        if (!checked && idx > -1) arr.splice(idx, 1);
+        updateDropdownLabel(id);
+    }
+
+    function applyDropdownFilter(id) {
+        closeDropdown(id, true);
+        applyFilters();
+    }
+
+    // Click outside any open dropdown closes (and applies) it
+    document.addEventListener('click', function (e) {
+        if (!openDropdownId) return;
+        const wrap = document.querySelector(`[data-filter-id="${openDropdownId}"]`);
+        if (wrap && !wrap.contains(e.target)) closeDropdown(openDropdownId);
+    });
     // FIX 3 & 4: Age range derived from actual data, not hardcoded
     const allAges        = profiles.map(p => p.age);
     const DATA_AGE_MIN   = Math.min(...allAges);
@@ -613,85 +764,17 @@
                                 </div>
                             </div>
 
-                            <!-- Location options built from data -->
-                            <div class="space-y-4 pt-4 border-t border-gray-50">
-                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Location</h4>
-                                <select id="countryFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">All Countries</option>
-                                    <option value="India">India</option>
-                                </select>
-                                <select id="stateFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">All States</option>
-                                    ${uniqueStates.map(s => `<option value="${s}">${s}</option>`).join('')}
-                                </select>
-                                <select id="cityFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">All Cities</option>
-                                    ${uniqueCities.map(c => `<option value="${c}">${c}</option>`).join('')}
-                                </select>
-                            </div>
+                            <!-- Location -->
+                            ${renderFilterSection('Location')}
 
                             <!-- Professional -->
-                            <div class="space-y-4 pt-4 border-t border-gray-50">
-                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Professional</h4>
-                                <select id="incomeFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">Annual Income</option>
-                                    <option value="0-5L">0–5L</option>
-                                    <option value="6-10L">6–10L</option>
-                                    <option value="11-15L">11–15L</option>
-                                    <option value="16-20L">16–20L</option>
-                                    <option value="21-25L">21–25L</option>
-                                    <option value="26L+">26L+</option>
-                                </select>
-                                <select id="eduFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">Education</option>
-                                    <option value="Bachelors">Bachelors</option>
-                                    <option value="Masters">Masters</option>
-                                    <option value="Doctorate">Doctorate</option>
-                                </select>
-                            </div>
+                            ${renderFilterSection('Professional')}
 
                             <!-- Lifestyle -->
-                            <div class="space-y-4 pt-4 border-t border-gray-50">
-                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Social & Lifestyle</h4>
-                                <select id="dietFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">Diet</option>
-                                    <option value="Veg">Vegetarian</option>
-                                    <option value="Non-Veg">Non-Vegetarian</option>
-                                </select>
-                                <select id="statusFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">Marital Status</option>
-                                    <option value="Never Married">Never Married</option>
-                                    <option value="Divorced">Divorced</option>
-                                    <option value="Widowed">Widowed</option>
-                                    <option value="Awaiting Divorce">Awaiting Divorce</option>
-                                </select>
-                                <select id="manglikFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">Manglik</option>
-                                    <option value="Yes">Yes</option>
-                                    <option value="No">No</option>
-                                </select>
-                            </div>
+                            ${renderFilterSection('Social & Lifestyle')}
 
                             <!-- Religion & Caste -->
-                            <div class="space-y-4 pt-4 border-t border-gray-50">
-                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Religion & Caste</h4>
-                                <select id="religionFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">Religion</option>
-                                    ${uniqueReligions.map(r => `<option value="${r}">${r}</option>`).join('')}
-                                </select>
-                                <select id="casteFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">Caste</option>
-                                    ${uniqueCastes.map(c => `<option value="${c}">${c}</option>`).join('')}
-                                </select>
-                                <select id="subcasteFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">Sub-caste</option>
-                                    ${uniqueSubcastes.map(s => `<option value="${s}">${s}</option>`).join('')}
-                                </select>
-                                <select id="gotraFilter" onchange="applyFilters()" class="sk-select w-full bg-transparent border-b border-gray-100 py-2 text-sm font-medium">
-                                    <option value="All">Gotra</option>
-                                    ${uniqueGotras.map(g => `<option value="${g}">${g}</option>`).join('')}
-                                </select>
-                            </div>
+                            ${renderFilterSection('Religion & Caste')}
                             <button onclick="closeFilterSheet()" id="showResultsBtn" class="lg:hidden w-full bg-black text-white rounded-2xl py-3.5 text-xs font-bold uppercase tracking-widest">Show Results</button>
                         </div>
                     </aside>
@@ -1023,10 +1106,14 @@
 
     function resetFilters() {
         const el = id => document.getElementById(id);
-        ['countryFilter','stateFilter','cityFilter','incomeFilter',
-         'eduFilter','dietFilter','statusFilter','manglikFilter',
-         'religionFilter','casteFilter','subcasteFilter','gotraFilter']
-            .forEach(id => { if(el(id)) el(id).value = 'All'; });
+
+        // Clear all multi-select filter selections, uncheck boxes, refresh labels
+        FILTER_CONFIGS.forEach(cfg => {
+            selectedValues[cfg.id] = [];
+            document.querySelectorAll(`input[data-filter-id="${cfg.id}"]`).forEach(cb => cb.checked = false);
+            updateDropdownLabel(cfg.id);
+        });
+        if (openDropdownId) closeDropdown(openDropdownId, true);
 
         // FIX 4: reset to actual data-derived defaults
         if (el('ageMin'))    el('ageMin').value    = String(DATA_AGE_MIN);
@@ -1038,7 +1125,6 @@
     }
 
     function applyFilters() {
-        const val   = id => document.getElementById(id)?.value || 'All';
         const ageMin  = parseInt(document.getElementById('ageMin')?.value  || DATA_AGE_MIN);
         const ageMax  = parseInt(document.getElementById('ageMax')?.value  || DATA_AGE_MAX + 5);
         const hMin    = parseInt(document.getElementById('heightMin')?.value || DATA_HEIGHT_MIN);
@@ -1047,23 +1133,29 @@
         // FIX 5: search query
         const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
 
+        // Multi-select match: empty selection = no filtering on this field ("show all")
+        const matches = (id, value) => {
+            const sel = selectedValues[id];
+            return sel.length === 0 || sel.includes(value);
+        };
+
         const filtered = profiles.filter(p => {
             if (p.gender  !== activeGender)                        return false;
             if (p.age < ageMin || p.age > ageMax)                  return false;
             const pH = heightToInches(p.height);
             if (pH < hMin || pH > hMax)                            return false;
-            if (val('countryFilter') !== 'All' && p.country !== val('countryFilter')) return false;
-            if (val('stateFilter')   !== 'All' && p.state   !== val('stateFilter'))   return false;
-            if (val('cityFilter')    !== 'All' && p.city    !== val('cityFilter'))     return false;
-            if (val('incomeFilter')  !== 'All' && p.income  !== val('incomeFilter'))  return false;
-            if (val('eduFilter')     !== 'All' && p.edu     !== val('eduFilter'))      return false;
-            if (val('dietFilter')    !== 'All' && p.diet    !== val('dietFilter'))     return false;
-            if (val('statusFilter')  !== 'All' && p.status  !== val('statusFilter'))  return false;
-            if (val('manglikFilter') !== 'All' && p.manglik !== val('manglikFilter')) return false;
-            if (val('religionFilter') !== 'All' && p.religion !== val('religionFilter')) return false;
-            if (val('casteFilter')    !== 'All' && p.caste    !== val('casteFilter'))    return false;
-            if (val('subcasteFilter') !== 'All' && p.subcaste !== val('subcasteFilter')) return false;
-            if (val('gotraFilter')    !== 'All' && p.gotra    !== val('gotraFilter'))    return false;
+            if (!matches('countryFilter',  p.country))  return false;
+            if (!matches('stateFilter',    p.state))    return false;
+            if (!matches('cityFilter',     p.city))     return false;
+            if (!matches('incomeFilter',   p.income))   return false;
+            if (!matches('eduFilter',      p.edu))      return false;
+            if (!matches('dietFilter',     p.diet))     return false;
+            if (!matches('statusFilter',   p.status))   return false;
+            if (!matches('manglikFilter',  p.manglik))  return false;
+            if (!matches('religionFilter', p.religion)) return false;
+            if (!matches('casteFilter',    p.caste))    return false;
+            if (!matches('subcasteFilter', p.subcaste)) return false;
+            if (!matches('gotraFilter',    p.gotra))    return false;
 
             // FIX 5: match name or job
             if (query) {
