@@ -3,6 +3,16 @@
 
 ---
 
+# v6
+- Date - 25 Sep 26
+- AI Used - Claude
+#### Changes List
+- Added gallery design
+- Built Excel
+- Built Excel to json builder
+
+---
+
 # v5
 - Date - 24 Sep 26
 - AI Used - Claude
