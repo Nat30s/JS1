@@ -3,6 +3,14 @@
 
 ---
 
+# v7
+- Date - 28 Sep 26
+- AI Used - Claude
+#### Changes List
+- Rebuilt Blog CRM, template from TAcre
+
+---
+
 # v6
 - Date - 25 Sep 26
 - AI Used - Claude
