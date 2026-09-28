@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog JSON Builder | SoulKnot</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body { font-family: 'Inter', sans-serif; background-color: #fdfdfd; color: #1a1a1a; scroll-behavior: smooth; }
+
+    .glass-nav { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; }
+
+    .dropzone { border: 2px dashed #e5e7eb; transition: all 0.2s ease; }
+    .dropzone:hover, .dropzone.dragover { border-color: #000; background-color: #f9fafb; }
+
+    table { border-collapse: collapse; width: 100%; }
+    th { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9ca3af; text-align: left; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; }
+    td { font-size: 13px; padding: 12px 16px; border-bottom: 1px solid #f9fafb; vertical-align: top; color: #374151; }
+    tr.row-error td { background-color: #fff1f2; }
+
+    .thumb { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; background: #f1f1f1; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+</style>
+</head>
+<body class="antialiased">
+
+    <!-- Header (same shell as blog/index.html and blog/post.html) -->
+    <header class="sticky top-0 z-50 glass-nav border-b border-gray-100/50">
+        <div class="max-w-5xl mx-auto px-5 sm:px-8 py-5 sm:py-6 flex justify-between items-center">
+            <a href="../JSv5.html" class="flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 bg-black rounded-2xl flex items-center justify-center text-white rotate-3">
+                    <span class="font-bold text-base sm:text-lg -rotate-3">S</span>
+                </div>
+                <div>
+                    <span class="block font-bold text-lg sm:text-xl tracking-tight leading-none">SoulKnot</span>
+                    <span class="block text-[9px] sm:text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-1">Blog Tools</span>
+                </div>
+            </a>
+            <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Blog JSON Builder</span>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
+
+        <p class="section-label mb-3">Data / Blog</p>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Excel <span class="text-gray-300">→ blog.json</span></h1>
+        <p class="text-gray-500 text-sm sm:text-base leading-relaxed max-w-2xl mb-10">
+            Upload the blog sheet and export it as <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">blog.json</code> for the <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">/blog/</code> folder.
+            Row 1 is the frozen header (ID, Date, Category, Title, Image Link, Excerpt, Link), row 2 is a spare, and data starts from row 3.
+            Columns B–H hold the fields; column A stays blank. Dates are read as real Excel dates and exported as <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">28 Sep 2026</code>.
+        </p>
+
+        <!-- Upload -->
+        <div id="dropzone" class="dropzone rounded-[2rem] p-10 sm:p-12 text-center cursor-pointer bg-white">
+            <div class="w-14 h-14 mx-auto mb-4 bg-black rounded-2xl flex items-center justify-center rotate-3">
+                <svg class="-rotate-3" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+            </div>
+            <p class="font-semibold mb-1">Drop your Excel file here, or click to browse</p>
+            <p class="text-xs text-gray-400">.xlsx or .xls</p>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden">
+        </div>
+
+        <p id="fileName" class="text-xs text-gray-400 mt-3 hidden"></p>
+
+        <!-- Summary bar -->
+        <div id="summaryBar" class="hidden mt-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-gray-100 rounded-2xl px-6 py-4">
+            <div class="flex items-center gap-6 text-sm">
+                <span><span id="countTotal" class="font-bold">0</span> <span class="text-gray-400">rows parsed</span></span>
+                <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                <span id="countErrors" class="font-bold text-rose-500 hidden"></span>
+            </div>
+            <button id="downloadBtn" class="bg-black text-white px-6 py-3 rounded-2xl text-xs font-bold hover:bg-zinc-800 transition-all">Download blog.json</button>
+        </div>
+
+        <!-- Preview table -->
+        <div id="previewWrap" class="hidden mt-6 bg-white border border-gray-100 rounded-[1.5rem] overflow-hidden overflow-x-auto">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Title</th>
+                        <th>Image</th>
+                        <th>Excerpt</th>
+                        <th>Link</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="previewBody"></tbody>
+            </table>
+        </div>
+
+        <p id="emptyState" class="text-xs text-gray-400 mt-6"></p>
+
+    </main>
+
+    <footer class="mt-20 py-12 border-t border-gray-100 text-center">
+        <div class="mb-4 font-bold text-lg">SoulKnot</div>
+        <p class="text-gray-300 text-xs italic">Designed for those who seek more than just a profile.</p>
+    </footer>
+
+<script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const fileNameEl = document.getElementById('fileName');
+    const summaryBar = document.getElementById('summaryBar');
+    const previewWrap = document.getElementById('previewWrap');
+    const previewBody = document.getElementById('previewBody');
+    const countTotal = document.getElementById('countTotal');
+    const countErrors = document.getElementById('countErrors');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    let parsedRows = [];
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+        fileNameEl.textContent = file.name;
+        fileNameEl.classList.remove('hidden');
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                parseRows(rows);
+            } catch (err) {
+                alert('Could not read this file. Please make sure it is a valid .xlsx/.xls file.');
+                console.error(err);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function parseRows(rows) {
+        parsedRows = [];
+
+        // Row 1 = header labels (frozen), row 2 = spare, data starts row 3 (index 2).
+        // Columns: A=0 unused, B=1 id, C=2 date, D=3 category, E=4 title, F=5 image, G=6 excerpt, H=7 link
+        for (let i = 2; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.every(c => String(c).trim() === '')) continue; // skip fully blank rows
+
+            const id = String(row[1] ?? '').trim();
+            const dateResult = normaliseDate(row[2]);
+            const date = dateResult.value;
+            const category = String(row[3] ?? '').trim();
+            const title = String(row[4] ?? '').trim();
+            const image = String(row[5] ?? '').trim();
+            const excerpt = String(row[6] ?? '').trim();
+            const link = String(row[7] ?? '').trim();
+
+            const errors = [];
+            if (!id) errors.push('Missing ID');
+            if (dateResult.error) errors.push(dateResult.error);
+            if (!category) errors.push('Missing category');
+            if (!title) errors.push('Missing title');
+            if (!image) errors.push('Missing image link');
+            if (!excerpt) errors.push('Missing excerpt');
+            if (!link) errors.push('Missing link');
+
+            parsedRows.push({ id, date, category, title, image, excerpt, link, errors, rowNum: i + 1 });
+        }
+
+        renderPreview();
+    }
+
+    function renderPreview() {
+        previewBody.innerHTML = '';
+        const emptyState = document.getElementById('emptyState');
+
+        if (parsedRows.length === 0) {
+            summaryBar.classList.add('hidden');
+            previewWrap.classList.add('hidden');
+            emptyState.textContent = 'No data rows found below the header row.';
+            return;
+        }
+        emptyState.textContent = '';
+
+        let errorCount = 0;
+
+        parsedRows.forEach((r) => {
+            const tr = document.createElement('tr');
+            if (r.errors.length) { tr.classList.add('row-error'); errorCount++; }
+
+            tr.innerHTML = `
+                <td class="font-semibold text-gray-900">${escapeHtml(r.id) || '—'}</td>
+                <td class="whitespace-nowrap">${escapeHtml(r.date) || '—'}</td>
+                <td>${r.category ? `<span class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 px-2.5 py-1 rounded-full whitespace-nowrap">${escapeHtml(r.category)}</span>` : '—'}</td>
+                <td class="max-w-[180px] truncate" title="${escapeHtml(r.title)}">${escapeHtml(r.title) || '—'}</td>
+                <td>${r.image ? `<img src="${escapeAttr(r.image)}" class="thumb" onerror="this.style.opacity=0.2">` : '—'}</td>
+                <td class="max-w-[220px] truncate" title="${escapeHtml(r.excerpt)}">${escapeHtml(r.excerpt) || '—'}</td>
+                <td class="max-w-[160px] truncate" title="${escapeHtml(r.link)}"><span class="text-blue-600">${escapeHtml(r.link) || '—'}</span></td>
+                <td>${r.errors.length ? `<span class="text-rose-500 font-semibold">${r.errors.join(', ')}</span>` : `<span class="text-green-600 font-semibold">OK</span>`}</td>
+            `;
+            previewBody.appendChild(tr);
+        });
+
+        countTotal.textContent = parsedRows.length;
+        if (errorCount > 0) {
+            countErrors.textContent = `${errorCount} row${errorCount > 1 ? 's' : ''} with issues`;
+            countErrors.classList.remove('hidden');
+        } else {
+            countErrors.classList.add('hidden');
+        }
+
+        summaryBar.classList.remove('hidden');
+        previewWrap.classList.remove('hidden');
+    }
+
+    downloadBtn.addEventListener('click', () => {
+        if (!parsedRows.length) return;
+
+        const output = parsedRows.map(r => ({
+            id: r.id,
+            date: r.date,
+            category: r.category,
+            title: r.title,
+            image: r.image,
+            excerpt: r.excerpt,
+            link: r.link
+        }));
+
+        const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'blog.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    // Converts an Excel date cell to "28 Sep 2026".
+    // Real date cells arrive as serial numbers; converted via UTC to avoid timezone day-shifts.
+    // Text cells are accepted if Date.parse can read them, and are passed through as typed.
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function normaliseDate(cell) {
+        if (cell === '' || cell === null || cell === undefined) return { value: '', error: 'Missing date' };
+        if (typeof cell === 'number') {
+            const d = new Date(Math.round((cell - 25569) * 86400000));
+            if (isNaN(d.getTime())) return { value: '', error: 'Invalid date' };
+            return { value: `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`, error: '' };
+        }
+        const text = String(cell).trim();
+        if (!text) return { value: '', error: 'Missing date' };
+        if (isNaN(Date.parse(text))) return { value: text, error: 'Invalid date' };
+        return { value: text, error: '' };
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+    function escapeAttr(str) {
+        return escapeHtml(str);
+    }
+</script>
+
+</body>
+</html>
