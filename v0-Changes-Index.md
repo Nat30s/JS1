@@ -3,6 +3,16 @@
 
 ---
 
+# v8
+- Date - 29 Sep 26
+- AI Used - Claude
+#### Changes List
+- Built a homepage section
+
+---
+
+---
+
 # v7
 - Date - 28 Sep 26
 - AI Used - Claude
