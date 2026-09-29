@@ -191,17 +191,17 @@ footer.site{border-top:1px solid var(--line);margin-top:80px;padding:56px 0 32px
     <div class="grid4" id="recent"></div>
   </section>
 
-  <!-- ═════════ BLOG (from blog/blog.json) ═════════ -->
-  <section class="sec" id="blogSec" hidden>
-    <div class="sec-h"><div><p class="label">From the blog</p><h2>Stories &amp; guidance</h2></div><a class="more" href="blog/index.html">View all →</a></div>
-    <div class="posts" id="posts"></div>
-  </section>
-
   <!-- ═════════ CTA ═════════ -->
   <section class="cta">
     <h2>Ready to begin?</h2>
     <p>Create your profile and start meeting people who share your values.</p>
     <a href="#" class="btn">Create Profile</a>
+  </section>
+
+  <!-- ═════════ BLOG (from blog/blog.json) ═════════ -->
+  <section class="sec" id="blogSec" style="margin-bottom:0" hidden>
+    <div class="sec-h"><div><p class="label">From the blog</p><h2>Stories &amp; guidance</h2></div><a class="more" href="blog/index.html">View all →</a></div>
+    <div class="posts" id="posts"></div>
   </section>
 </main>
 
@@ -225,12 +225,14 @@ footer.site{border-top:1px solid var(--line);margin-top:80px;padding:56px 0 32px
 </footer>
 
 <script>
-/* ── PLACEHOLDER PROFILES (swap for profile JSON later; add `img` to use a real photo) ── */
+/* ── COLLAGE: permanent sample imagery (not sourced from profile data). Swap `img` URLs to change photos. ── */
+const U = id => `https://images.unsplash.com/${id}?auto=format&fit=crop&q=80&w=800`;
 const COLLAGE = [
-  {n:'Mehak', a:25, c:'Chandigarh', g:'g0'},
-  {n:'Aditya', a:30, c:'Mohali', g:'g1'},
-  {n:'Sanya', a:27, c:'Panchkula', g:'g3'}
+  {n:'Mehak', a:25, c:'Chandigarh', g:'g0', img:U('photo-1531123897727-8f129e1688ce')},
+  {n:'Aditya', a:30, c:'Mohali', g:'g1', img:U('photo-1506794778202-cad84cf45f1d')},
+  {n:'Sanya', a:27, c:'Panchkula', g:'g3', img:U('photo-1534528741775-53994a69daeb')}
 ];
+/* ── RECENTLY JOINED: temporary placeholders (swap for profile JSON later) ── */
 const RECENT = [
   {n:'Mehak', a:25, h:'5\'4"', job:'Product Designer', c:'Chandigarh', e:'Masters', g:'g0'},
   {n:'Sanya', a:27, h:'5\'6"', job:'Venture Capitalist', c:'Panchkula', e:'Masters', g:'g2'},
@@ -238,7 +240,7 @@ const RECENT = [
   {n:'Jasleen', a:29, h:'5\'3"', job:'Bank Manager', c:'Zirakpur', e:'Masters', g:'g1'}
 ];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const tile = (p, inner) => `<div class="ph ${p.g}">${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.n)}">` : esc(p.n[0])}${inner}</div>`;
+const tile = (p, inner) => `<div class="ph ${p.g}">${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.n)}" onerror="this.remove()">` : esc(p.n[0])}${inner}</div>`;
 
 document.getElementById('collage').innerHTML =
   tile(COLLAGE[0], `<span class="ver">Verified</span><div class="float"><span>${COLLAGE[0].n}, ${COLLAGE[0].a}</span><span>${COLLAGE[0].c}</span></div>`) +

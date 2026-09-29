@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ══════════════ ## SEO META: edit per post ══════════════ -->
+<title>From Shortlist to Shagun: How Simran and Aditya Found Each Other | SoulKnot</title>
+<meta name="description" content="Two busy professionals, one shortlist, and a first conversation that changed everything. Their story, in their own words.">
+<link rel="canonical" href="https://www.soulknot.example/blog/simran-and-aditya-story.html">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="From Shortlist to Shagun: How Simran and Aditya Found Each Other | SoulKnot">
+<meta property="og:description" content="Two busy professionals, one shortlist, and a first conversation that changed everything. Their story, in their own words.">
+<meta property="og:image" content="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200">
+<meta property="og:url" content="https://www.soulknot.example/blog/simran-and-aditya-story.html">
+<meta property="og:site_name" content="SoulKnot">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body { font-family: 'Inter', sans-serif; background-color: #fdfdfd; color: #1a1a1a; scroll-behavior: smooth; }
+
+    .glass-nav { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin-bottom: 16px; }
+
+    .breadcrumb a { color: #9ca3af; }
+    .breadcrumb a:hover { color: #000; }
+
+    .nav-link { transition: color 0.15s ease; }
+    .nav-link.active { color: #000; }
+
+    @media (min-width: 1024px) { #mobileMenu { display: none !important; } }
+
+    /* Article prose */
+    .prose-body { font-size: 16px; line-height: 1.85; color: #374151; }
+    .prose-body p { margin-bottom: 22px; }
+    .prose-body h2 { font-size: 21px; font-weight: 700; color: #1a1a1a; margin: 44px 0 16px; letter-spacing: -0.01em; }
+    .prose-body h3 { font-size: 17px; font-weight: 700; color: #1a1a1a; margin: 32px 0 12px; }
+    .prose-body ul { margin: 0 0 22px; padding-left: 0; list-style: none; }
+    .prose-body li { position: relative; padding-left: 26px; margin-bottom: 10px; }
+    .prose-body li::before { content: ''; position: absolute; left: 0; top: 11px; width: 6px; height: 6px; background: #000; border-radius: 999px; }
+    .prose-body blockquote { border-left: 2px solid #000; padding: 4px 0 4px 20px; margin: 28px 0; font-size: 18px; font-weight: 500; font-style: italic; color: #1a1a1a; }
+    .prose-body a { color: #000; text-decoration: underline; text-underline-offset: 2px; }
+    .prose-body strong { font-weight: 700; color: #1a1a1a; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+</style>
+</head>
+<body class="antialiased">
+
+    <!-- ══════════════ ## HEADER / NAVIGATION: shared, links relative to /blog/ ══════════════ -->
+    <header class="max-w-7xl mx-auto px-5 sm:px-8 py-5 sm:py-6 flex justify-between items-center sticky top-0 z-50 glass-nav border-b border-gray-100/50">
+        <a href="../JSv5.html" class="flex items-center gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-black rounded-2xl flex items-center justify-center text-white rotate-3">
+                <span class="font-bold text-base sm:text-lg -rotate-3">S</span>
+            </div>
+            <div>
+                <span class="block font-bold text-lg sm:text-xl tracking-tight leading-none">SoulKnot</span>
+                <span class="block text-[9px] sm:text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-1">Curated Matches</span>
+            </div>
+        </a>
+
+        <div class="flex items-center gap-3 sm:gap-8">
+            <nav class="hidden lg:flex gap-10 text-xs font-bold uppercase tracking-widest text-gray-400">
+                <a href="../JSv5.html" class="nav-link hover:text-black">Discover</a>
+                <a href="../JSv5.html" class="nav-link hover:text-black">Shortlisted</a>
+                <a href="index.html" class="nav-link active">Blog</a>
+                <a href="#" class="nav-link hover:text-black">Messages</a>
+            </nav>
+            <div class="h-8 w-[1px] bg-gray-100 hidden lg:block"></div>
+            <button class="bg-black text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-2xl text-[10px] sm:text-xs font-bold hover:bg-zinc-800 transition-all">Create Profile</button>
+            <button onclick="toggleMobileMenu()" aria-label="Menu" class="lg:hidden w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-xl hover:bg-gray-50">
+                <svg id="menuIconOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg id="menuIconClose" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <div id="mobileMenu" class="hidden fixed inset-x-0 top-[65px] sm:top-[73px] z-40 bg-white border-b border-gray-100 px-5 py-4 space-y-1 shadow-lg">
+        <a href="../JSv5.html" class="block py-3 text-sm font-bold uppercase tracking-widest text-gray-600 border-b border-gray-50">Discover</a>
+        <a href="../JSv5.html" class="block py-3 text-sm font-bold uppercase tracking-widest text-gray-600 border-b border-gray-50">Shortlisted</a>
+        <a href="index.html" class="block py-3 text-sm font-bold uppercase tracking-widest text-black border-b border-gray-50">Blog</a>
+        <a href="#" class="block py-3 text-sm font-bold uppercase tracking-widest text-gray-600">Messages</a>
+    </div>
+
+    <main class="max-w-3xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+
+        <!-- ══════════════ ## BREADCRUMB: edit post title text only ══════════════ -->
+        <nav class="breadcrumb flex items-center gap-2 text-xs font-medium mb-6" aria-label="Breadcrumb">
+            <a href="../JSv5.html">Home</a>
+            <span class="text-gray-300">/</span>
+            <a href="index.html">Blog</a>
+            <span class="text-gray-300">/</span>
+            <span class="text-black font-semibold truncate">Simran and Aditya</span>
+        </nav>
+
+        <a href="index.html" class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black mb-8 transition-colors group w-fit">
+            <div class="w-8 h-8 border border-gray-200 rounded-full flex items-center justify-center group-hover:border-black transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            </div>
+            Back to Blog
+        </a>
+
+        <!-- ══════════════ ## POST META: category, title, byline/date/read-time ══════════════ -->
+        <p class="section-label mb-3 !text-rose-500">Success Stories</p>
+        <h1 class="text-3xl md:text-[2.5rem] font-bold leading-tight tracking-tight mb-5">From Shortlist to Shagun: How Simran and Aditya Found Each Other</h1>
+        <div class="flex items-center gap-3 text-xs font-medium text-gray-400 mb-8">
+            <span>By SoulKnot Editorial</span>
+            <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+            <span>12 Jan 2026</span>
+            <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+            <span>4 min read</span>
+        </div>
+
+        <!-- ══════════════ ## HERO IMAGE: swap src/alt per post ══════════════ -->
+        <div class="relative rounded-[2rem] overflow-hidden h-[240px] md:h-[400px] mb-10 bg-gray-100">
+            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1400" class="w-full h-full object-cover" alt="A newly married couple smiling together">
+        </div>
+
+        <!-- ══════════════ ## ARTICLE BODY: supports h2/h3, p, ul, blockquote, strong, a ══════════════ -->
+        <article class="prose-body">
+            <p>Simran was working long days in Amritsar. Aditya was juggling hospital shifts in Mohali. Neither had much time for a search that felt like a second job, and both had quietly decided to give it three months before taking a break. This is how those three months went.</p>
+
+            <h2>The shortlist that stayed short</h2>
+            <p>Simran had a rule: no more than five profiles on her shortlist at a time. Aditya's profile was the third one she saved, mostly because of the detail in his hobbies section. Instead of a generic line, he had written about learning classical guitar late at night after long shifts.</p>
+
+            <blockquote>"I did not fall for the profile. I fell for the fact that someone had taken the time to describe himself honestly."</blockquote>
+
+            <h2>The first conversation</h2>
+            <p>Their first call was meant to last fifteen minutes. It lasted almost two hours. They talked about work, music, and what an ordinary Sunday should look like. Family expectations came up early, and that turned out to help. Both were relieved to find the other was thinking about it just as carefully.</p>
+
+            <h3>What they say made the difference</h3>
+            <ul>
+                <li>Filling in their profiles completely and honestly</li>
+                <li>Keeping the shortlist small enough to give each profile real attention</li>
+                <li>Talking about family and expectations in the first few conversations, not the tenth</li>
+                <li>Introducing the families only once they were both sure</li>
+            </ul>
+
+            <h2>Shagun, and what came next</h2>
+            <p>The families met four months after that first call, and the shagun followed soon after. Both sets of parents say the early honesty made everything else easier, because there were no surprises left to manage.</p>
+
+            <p>Every couple's route is different, but the pattern is familiar: a clear profile, a focused shortlist, and honest conversations early. If you are starting your own search, that is a good place to begin.</p>
+        </article>
+
+        <!-- Post footer CTA -->
+        <div class="mt-16 rounded-[2rem] border border-gray-100 bg-white p-8 text-center">
+            <p class="section-label mb-2">Ready when you are</p>
+            <h2 class="text-xl font-bold tracking-tight mb-4">Find your better half.</h2>
+            <a href="../JSv5.html" class="inline-block bg-black text-white px-6 py-3 rounded-2xl text-xs font-bold hover:bg-zinc-800 transition-all">Browse Profiles</a>
+        </div>
+    </main>
+
+    <footer class="mt-24 py-16 border-t border-gray-100 text-center">
+        <div class="mb-8 font-bold text-xl">SoulKnot</div>
+        <div class="flex justify-center gap-8 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <a href="#" class="hover:text-black">Privacy Policy</a>
+            <a href="#" class="hover:text-black">Terms of Service</a>
+            <a href="#" class="hover:text-black">Safety Tips</a>
+        </div>
+        <p class="mt-8 text-gray-300 text-xs italic">Designed for those who seek more than just a profile.</p>
+    </footer>
+
+    <script>
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('hidden');
+        document.getElementById('menuIconOpen').classList.toggle('hidden');
+        document.getElementById('menuIconClose').classList.toggle('hidden');
+    }
+    </script>
+</body>
+</html>
