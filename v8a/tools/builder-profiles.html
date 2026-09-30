@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile JSON Builder — SoulKnot</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body { font-family: 'Inter', sans-serif; background-color: #fcfcfc; color: #1a1a1a; }
+
+    .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; }
+
+    .dropzone { border: 2px dashed #d1d5db; transition: all 0.2s ease; }
+    .dropzone.dragover { border-color: #000; background-color: #f9f9f9; }
+
+    table { border-collapse: collapse; width: max-content; min-width: 100%; }
+    th { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #9ca3af; text-align: left; padding: 10px 14px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; position: sticky; top: 0; background: #fff; z-index: 2; }
+    td { font-size: 12px; padding: 9px 14px; border-bottom: 1px solid #f1f1f1; vertical-align: top; color: #374151; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+    tr.row-error td { background-color: #fef2f2; }
+
+    /* Sticky left columns: ID + Status — fixed widths so the two line up exactly with no gap/overlap */
+    th.pin-id, td.pin-id {
+        position: sticky; left: 0; z-index: 3; background: #fff; box-shadow: 1px 0 0 #e5e7eb;
+        width: 84px; min-width: 84px; max-width: 84px; box-sizing: border-box;
+    }
+    tr.row-error td.pin-id { background: #fef2f2; }
+    th.pin-id { z-index: 4; background: #fff; }
+
+    th.pin-status, td.pin-status {
+        position: sticky; left: 84px; z-index: 3; background: #fff; box-shadow: 1px 0 0 #e5e7eb;
+        width: 74px; min-width: 74px; max-width: 74px; box-sizing: border-box;
+        white-space: normal; overflow: visible; text-overflow: unset;
+    }
+    tr.row-error td.pin-status { background: #fef2f2; }
+    th.pin-status { z-index: 4; background: #fff; }
+
+    .table-scroll { max-height: 560px; overflow: auto; }
+
+    .table-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+    .table-scroll::-webkit-scrollbar-track { background: #f5f5f5; }
+    .table-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+    .table-scroll::-webkit-scrollbar-thumb:hover { background: #b0b3b8; }
+
+    .badge-ok { color: #16a34a; font-weight: 700; }
+    .badge-err { color: #ef4444; font-weight: 700; }
+</style>
+</head>
+<body class="antialiased">
+
+    <header class="sticky top-0 bg-white/95 backdrop-blur-md z-50 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+            <a href="#" class="flex items-center gap-2 font-bold text-xl">
+                <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white text-xs font-black">SK</div>
+                SoulKnot <span class="text-[10px] font-normal bg-gray-100 px-2 py-0.5 rounded-full ml-1">Tools</span>
+            </a>
+            <span class="text-sm font-medium text-gray-400">Profile JSON Builder</span>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+
+        <p class="section-label mb-3">Data / Profiles</p>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Excel → profiles.json</h1>
+        <p class="text-gray-500 text-sm mb-10 max-w-2xl">Upload <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">soulknot_profiles_master.xlsx</code> — sheets <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">Brides</code> and <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">Grooms</code>, column A blank, header row 1 frozen, data starts row 2. Both sheets are merged into one JSON array.</p>
+
+        <!-- Upload -->
+        <div id="dropzone" class="dropzone rounded-[2rem] p-12 text-center cursor-pointer bg-white">
+            <div class="w-14 h-14 mx-auto mb-4 bg-black rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+            </div>
+            <p class="font-semibold mb-1">Drop your Excel file here, or click to browse</p>
+            <p class="text-xs text-gray-400">.xlsx or .xls — reads the "Brides" and "Grooms" sheets and merges them.</p>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden">
+        </div>
+
+        <p id="fileName" class="text-xs text-gray-400 mt-3 hidden"></p>
+
+        <!-- Summary bar -->
+        <div id="summaryBar" class="hidden mt-10 flex flex-wrap items-center justify-between gap-4 bg-white border border-gray-100 rounded-2xl px-6 py-4">
+            <div class="flex items-center gap-6 text-sm flex-wrap">
+                <span><span id="countTotal" class="font-bold">0</span> <span class="text-gray-400">rows parsed</span></span>
+                <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                <span><span id="countValid" class="font-bold text-green-600">0</span> <span class="text-gray-400">valid</span></span>
+                <span id="countErrorsWrap" class="hidden flex items-center gap-6">
+                    <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                    <span id="countErrors" class="font-bold text-red-500"></span>
+                </span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="downloadValidBtn" class="bg-black text-white px-7 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-800 transition-colors shadow-lg shadow-black/10">Download valid profiles JSON</button>
+                <button id="downloadAllBtn" class="hidden bg-gray-100 text-gray-500 px-5 py-2.5 rounded-full text-xs font-semibold hover:bg-gray-200 transition-colors">Download all (incl. errors)</button>
+            </div>
+        </div>
+
+        <!-- Preview table -->
+        <div id="previewWrap" class="hidden mt-6 bg-white border border-gray-100 rounded-2xl overflow-hidden">
+            <div class="table-scroll">
+                <table id="previewTable">
+                    <thead><tr id="previewHeadRow"></tr></thead>
+                    <tbody id="previewBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <p id="emptyState" class="text-xs text-gray-400 mt-6"></p>
+
+    </main>
+
+<script>
+    // ─────────────────────────────────────────────
+    // COLUMN MAP — Excel header (as written in the sheet) → JSON field
+    // Order here = column order in the sheet (col B onward) = preview table order
+    // ─────────────────────────────────────────────
+    const COLUMN_MAP = [
+        ['Profile ID', 'id'],
+        ['Full Name', 'name'],
+        ['Age', 'age'],
+        ['Gender', 'gender'],
+        ['City', 'city'],
+        ['State', 'state'],
+        ['Country', 'country'],
+        ['Job Title', 'job'],
+        ['Job Category', 'category'],
+        ['Education Level (Bachelors/Masters/Doctorate)', 'edu'],
+        ['Diet (Veg/Non-Veg)', 'diet'],
+        ['Height (e.g. 5\'9")', 'height'],
+        ['Bio / About', 'bio'],
+        ['Family Summary (one-liner)', 'family'],
+        ['Annual Income (e.g. 11-15L)', 'income'],
+        ['Marital Status', 'status'],
+        ['Children (Yes/No)', 'children'],
+        ['Manglik (Yes/No)', 'manglik'],
+        ['Education - Institution', 'eduInstitution'],
+        ['Education - Degree', 'eduDegree'],
+        ['Education - Graduation Year', 'eduYear'],
+        ['Career - Company', 'jobCompany'],
+        ['Career - Role', 'jobRole'],
+        ['Career - Experience', 'jobYears'],
+        ['Hobbies & Interests', 'hobbies'],
+        ['Religion', 'religion'],
+        ['Caste', 'caste'],
+        ['Sub-caste', 'subcaste'],
+        ['Gotra', 'gotra'],
+        ["Grandfather's Name", 'grandfatherName'],
+        ["Grandmother's Name", 'grandmotherName'],
+        ["Father's Name", 'fatherName'],
+        ["Father's Occupation", 'fatherOccupation'],
+        ["Mother's Name", 'motherName'],
+        ["Mother's Occupation", 'motherOccupation'],
+        ['Siblings', 'siblings'],
+        ["Siblings' Occupation", 'siblingsOccupation'],
+        ['Family Type (Nuclear/Joint)', 'familyType'],
+        ['Family Values (Traditional/Moderate/Liberal)', 'familyValues'],
+        ['Date of Birth', 'dob'],
+        ['Time of Birth', 'tob'],
+        ['Place of Birth', 'pob'],
+        ['Rashi', 'rashi'],
+        ['Nakshatra', 'nakshatra'],
+        ['Manglik Detail (e.g. Non-Manglik)', 'manglikDetail'],
+        ['Preferred Age - Min', 'prefAgeMin'],
+        ['Preferred Age - Max', 'prefAgeMax'],
+        ['Preferred Height - Min', 'prefHeightMin'],
+        ['Preferred Height - Max', 'prefHeightMax'],
+        ['Preferred Location', 'prefLocation'],
+        ['Preferred Education', 'prefEdu'],
+        ['Preferred Income', 'prefIncome'],
+        ['Preferred Caste', 'prefCaste'],
+        ['Preferred Diet', 'prefDiet'],
+        ['Image 1 URL', 'img1'],
+        ['Image 2 URL', 'img2'],
+        ['Image 3 URL', 'img3'],
+        ['Image 4 URL', 'img4'],
+        ['Image 5 URL', 'img5'],
+        ['Image 6 URL', 'img6'],
+        ['Image 7 URL', 'img7'],
+        ['Image 8 URL', 'img8'],
+        ['Image 9 URL', 'img9'],
+        ['Image 10 URL', 'img10']
+    ];
+
+    const IMAGE_FIELDS = COLUMN_MAP.filter(([,f]) => f.startsWith('img')).map(([,f]) => f);
+    const REQUIRED_FIELDS = ['id', 'name', 'age', 'gender', 'city', 'job', 'height'];
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const fileNameEl = document.getElementById('fileName');
+    const summaryBar = document.getElementById('summaryBar');
+    const previewWrap = document.getElementById('previewWrap');
+    const previewBody = document.getElementById('previewBody');
+    const previewHeadRow = document.getElementById('previewHeadRow');
+    const countTotal = document.getElementById('countTotal');
+    const countValid = document.getElementById('countValid');
+    const countErrorsWrap = document.getElementById('countErrorsWrap');
+    const countErrors = document.getElementById('countErrors');
+    const downloadValidBtn = document.getElementById('downloadValidBtn');
+    const downloadAllBtn = document.getElementById('downloadAllBtn');
+    const emptyState = document.getElementById('emptyState');
+
+    let parsedRows = [];
+
+    // Build header row once
+    previewHeadRow.innerHTML =
+        `<th class="pin-id">ID</th><th class="pin-status">Status</th>` +
+        COLUMN_MAP.filter(([,f]) => f !== 'id').map(([label]) => `<th>${escapeHtml(label)}</th>`).join('');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+        fileNameEl.textContent = file.name;
+        fileNameEl.classList.remove('hidden');
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                const sheetNames = workbook.SheetNames.filter(n => /brides|grooms/i.test(n));
+                if (sheetNames.length === 0) {
+                    alert('Could not find "Brides" or "Grooms" sheets in this file.');
+                    return;
+                }
+
+                let allRows = [];
+                sheetNames.forEach(sheetName => {
+                    const sheet = workbook.Sheets[sheetName];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                    allRows = allRows.concat(parseSheetRows(rows, sheetName));
+                });
+
+                parsedRows = allRows;
+                validateAndRender();
+            } catch (err) {
+                alert('Could not read this file. Please make sure it is a valid .xlsx/.xls file.');
+                console.error(err);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // Row 1 = header (frozen), data starts row 2 (index 1) — no spacer row. Col A (index 0) unused.
+    function parseSheetRows(rows, sheetName) {
+        const out = [];
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.every(c => String(c).trim() === '')) continue;
+
+            const obj = { _sheet: sheetName, _rowNum: i + 1 };
+            COLUMN_MAP.forEach(([, field], idx) => {
+                obj[field] = String(row[idx + 1] ?? '').trim();
+            });
+            out.push(obj);
+        }
+        return out;
+    }
+
+    function validateAndRender() {
+        // Duplicate-ID check across the merged set
+        const idCounts = {};
+        parsedRows.forEach(r => { if (r.id) idCounts[r.id] = (idCounts[r.id] || 0) + 1; });
+
+        parsedRows.forEach(r => {
+            const errors = [];
+
+            REQUIRED_FIELDS.forEach(f => {
+                if (!r[f]) errors.push(`Missing ${f}`);
+            });
+
+            if (r.id && !/^[AB]\d{4}$/.test(r.id)) {
+                errors.push('Bad ID format');
+            } else if (r.id) {
+                const prefix = r.id[0];
+                if (prefix === 'A' && r.gender !== 'Male') errors.push('ID prefix A but Gender ≠ Male');
+                if (prefix === 'B' && r.gender !== 'Female') errors.push('ID prefix B but Gender ≠ Female');
+            }
+
+            if (r.id && idCounts[r.id] > 1) errors.push('Duplicate ID');
+
+            r._errors = errors;
+        });
+
+        renderPreview();
+    }
+
+    function renderPreview() {
+        previewBody.innerHTML = '';
+
+        if (parsedRows.length === 0) {
+            summaryBar.classList.add('hidden');
+            previewWrap.classList.add('hidden');
+            emptyState.textContent = 'No data rows found below the header row.';
+            return;
+        }
+        emptyState.textContent = '';
+
+        let errorCount = 0;
+
+        parsedRows.forEach(r => {
+            const tr = document.createElement('tr');
+            const hasErrors = r._errors.length > 0;
+            if (hasErrors) { tr.classList.add('row-error'); errorCount++; }
+
+            let cells = `<td class="pin-id font-semibold text-gray-900">${escapeHtml(r.id) || '—'}</td>`;
+            cells += `<td class="pin-status">${hasErrors ? `<span class="badge-err">${escapeHtml(r._errors.join(', '))}</span>` : `<span class="badge-ok">OK</span>`}</td>`;
+
+            COLUMN_MAP.filter(([,f]) => f !== 'id').forEach(([, field]) => {
+                const val = r[field];
+                cells += `<td title="${escapeHtml(val)}">${escapeHtml(val) || '—'}</td>`;
+            });
+
+            tr.innerHTML = cells;
+            previewBody.appendChild(tr);
+        });
+
+        const validCount = parsedRows.length - errorCount;
+
+        countTotal.textContent = parsedRows.length;
+        countValid.textContent = validCount;
+        if (errorCount > 0) {
+            countErrors.textContent = `${errorCount} row${errorCount > 1 ? 's' : ''} with issues (excluded from valid export)`;
+            countErrorsWrap.classList.remove('hidden');
+            downloadAllBtn.classList.remove('hidden');
+        } else {
+            countErrorsWrap.classList.add('hidden');
+            downloadAllBtn.classList.add('hidden');
+        }
+
+        summaryBar.classList.remove('hidden');
+        previewWrap.classList.remove('hidden');
+    }
+
+    function buildProfileObject(r) {
+        const profile = {};
+        COLUMN_MAP.forEach(([, field]) => {
+            if (IMAGE_FIELDS.includes(field)) return; // handled separately below
+            let val = r[field];
+            if (field === 'age' || field === 'prefAgeMin' || field === 'prefAgeMax') {
+                val = val === '' ? val : Number(val);
+            }
+            profile[field] = val;
+        });
+
+        const images = IMAGE_FIELDS.map(f => r[f]).filter(Boolean);
+        profile.images = images;
+        profile.image = images[0] || '';
+
+        return profile;
+    }
+
+    function downloadJSON(rows, filename) {
+        const output = rows.map(buildProfileObject);
+        const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    downloadValidBtn.addEventListener('click', () => {
+        const validRows = parsedRows.filter(r => r._errors.length === 0);
+        if (!validRows.length) { alert('No valid rows to export.'); return; }
+        downloadJSON(validRows, 'soulknot_profiles.json');
+    });
+
+    downloadAllBtn.addEventListener('click', () => {
+        if (!parsedRows.length) return;
+        downloadJSON(parsedRows, 'soulknot_profiles_all_incl_errors.json');
+    });
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+</script>
+
+</body>
+</html>
