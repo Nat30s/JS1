@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "date": "12 Jan 2026",
+    "category": "Success Stories",
+    "title": "From Shortlist to Shagun: How Simran and Aditya Found Each Other",
+    "image": "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200",
+    "excerpt": "Two busy professionals, one shortlist, and a first conversation that changed everything. Their story, in their own words.",
+    "link": "blog/simran-and-aditya-story.html"
+  },
+  {
+    "id": "2",
+    "date": "5 Feb 2026",
+    "category": "Wedding Planning",
+    "title": "A Realistic 6-Month Wedding Planning Timeline",
+    "image": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=1200",
+    "excerpt": "What to book, decide and delegate, month by month, so the wedding season stays exciting instead of exhausting.",
+    "link": "blog/wedding-planning-timeline.html"
+  },
+  {
+    "id": "3",
+    "date": "24 Mar 2026",
+    "category": "Family & Culture",
+    "title": "Talking to Your Parents About Your Partner Preferences",
+    "image": "https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?auto=format&fit=crop&q=80&w=1200",
+    "excerpt": "How to have an honest, respectful conversation with the family when your expectations and theirs do not fully match.",
+    "link": "blog/talking-to-parents-about-preferences.html"
+  },
+  {
+    "id": "4",
+    "date": "",
+    "category": "Safety Tips",
+    "title": "How to Spot a Fake Profile Before You Connect",
+    "image": "",
+    "excerpt": "",
+    "link": "blog/spot-fake-profiles.html"
+  }
+]
