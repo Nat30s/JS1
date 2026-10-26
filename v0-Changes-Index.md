@@ -1,5 +1,13 @@
 
 
+---
+
+# v8a
+- Date - 29 Sep 26
+- AI Used - Claude
+#### Changes List
+- Added machmaker folder, matchmaker1.html and machmaker-core.js
+
 
 ---
 
@@ -8,8 +16,6 @@
 - AI Used - Claude
 #### Changes List
 - Built a homepage section
-
----
 
 ---
 
