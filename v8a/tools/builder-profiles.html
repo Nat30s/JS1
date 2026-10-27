@@ -116,6 +116,7 @@
     // ─────────────────────────────────────────────
     const COLUMN_MAP = [
         ['Profile ID', 'id'],
+        ['Matchmaker ID (optional, e.g. M001)', 'matchmakerId'],
         ['Full Name', 'name'],
         ['Age', 'age'],
         ['Gender', 'gender'],
@@ -181,6 +182,7 @@
         ['Image 10 URL', 'img10']
     ];
 
+    const MM_COL = COLUMN_MAP.findIndex(([, f]) => f === 'matchmakerId') + 1; // sheet column index (0 = blank col A)
     const IMAGE_FIELDS = COLUMN_MAP.filter(([,f]) => f.startsWith('img')).map(([,f]) => f);
     const REQUIRED_FIELDS = ['id', 'name', 'age', 'gender', 'city', 'job', 'height'];
 
@@ -200,6 +202,7 @@
     const emptyState = document.getElementById('emptyState');
 
     let parsedRows = [];
+    let headerWarnings = [];
 
     // Build header row once
     previewHeadRow.innerHTML =
@@ -235,14 +238,21 @@
                 }
 
                 let allRows = [];
+                headerWarnings = [];
                 sheetNames.forEach(sheetName => {
                     const sheet = workbook.Sheets[sheetName];
+                    // SheetJS drops an empty leading column A when the used range starts at B,
+                    // which shifts every field one place left. Force the range to start at A1.
+                    const rng = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+                    rng.s.c = 0; rng.s.r = 0;
+                    sheet['!ref'] = XLSX.utils.encode_range(rng);
                     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
                     allRows = allRows.concat(parseSheetRows(rows, sheetName));
                 });
 
                 parsedRows = allRows;
                 validateAndRender();
+                if (headerWarnings.length) alert('Check your sheet layout:\n\n' + headerWarnings.join('\n\n'));
             } catch (err) {
                 alert('Could not read this file. Please make sure it is a valid .xlsx/.xls file.');
                 console.error(err);
@@ -254,6 +264,10 @@
     // Row 1 = header (frozen), data starts row 2 (index 1) — no spacer row. Col A (index 0) unused.
     function parseSheetRows(rows, sheetName) {
         const out = [];
+        const mmHeader = String((rows[0] || [])[MM_COL] ?? '').trim();
+        if (!/matchmaker/i.test(mmHeader)) {
+            headerWarnings.push(`${sheetName}: column C header should be "Matchmaker ID" (found "${mmHeader || 'blank'}"). This may be an older sheet layout, so columns could be read one place off.`);
+        }
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             if (!row || row.every(c => String(c).trim() === '')) continue;
@@ -289,6 +303,8 @@
 
             if (r.id && idCounts[r.id] > 1) errors.push('Duplicate ID');
 
+            if (r.matchmakerId && !/^M\d{3}$/.test(r.matchmakerId)) errors.push('Bad Matchmaker ID');
+
             r._errors = errors;
         });
 
@@ -304,7 +320,11 @@
             emptyState.textContent = 'No data rows found below the header row.';
             return;
         }
-        emptyState.textContent = '';
+        const mmCounts = {};
+        parsedRows.forEach(r => { if (r.matchmakerId) mmCounts[r.matchmakerId] = (mmCounts[r.matchmakerId] || 0) + 1; });
+        const mmList = Object.keys(mmCounts).sort().map(k => `${k} (${mmCounts[k]})`).join(', ');
+        emptyState.textContent = (mmList ? `Matchmaker IDs found: ${mmList}. Each needs a matching /matchmaker/ page.` : '') + (headerWarnings.length ? ' ⚠ ' + headerWarnings.join(' ') : '');
+        emptyState.className = 'text-xs mt-6 ' + (headerWarnings.length ? 'text-red-500 font-semibold' : 'text-gray-400');
 
         let errorCount = 0;
 

@@ -1,4 +1,12 @@
 
+---
+
+# v8b
+- Date - 27 Oct 26
+- AI Used - Claude
+- File - Profile Builder and Profile Excel
+#### Changes List
+- Updated the tools/builder to account for new excel with matchmaker id in column C
 
 ---
 
